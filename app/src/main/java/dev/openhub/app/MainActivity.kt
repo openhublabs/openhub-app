@@ -1,47 +1,58 @@
 package dev.openhub.app
 
 import android.os.Bundle
-import androidx.activity.ComponentActivity
-import androidx.activity.compose.setContent
-import androidx.activity.enableEdgeToEdge
-import androidx.compose.foundation.layout.fillMaxSize
-import androidx.compose.foundation.layout.padding
-import androidx.compose.material3.Scaffold
-import androidx.compose.material3.Text
-import androidx.compose.runtime.Composable
-import androidx.compose.ui.Modifier
-import androidx.compose.ui.tooling.preview.Preview
-import dev.openhub.app.ui.theme.OpenHubTheme
+import androidx.appcompat.app.AppCompatActivity
+import androidx.fragment.app.Fragment
+import dev.openhub.app.databinding.ActivityMainBinding
+import dev.openhub.app.ui.BuscarFragment
+import dev.openhub.app.ui.CategoriasFragment
+import dev.openhub.app.ui.ExplorarFragment
+import dev.openhub.app.ui.FeedEventosFragment
+import dev.openhub.app.ui.HistorialFragment
 
-class MainActivity : ComponentActivity() {
+class MainActivity : AppCompatActivity() {
+
+    private lateinit var binding: ActivityMainBinding
+
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
-        enableEdgeToEdge()
-        setContent {
-            OpenHubTheme {
-                Scaffold( modifier = Modifier.fillMaxSize() ) { innerPadding ->
-                    Greeting(
-                        name = "Android",
-                        modifier = Modifier.padding(innerPadding)
-                    )
-                }
+        binding = ActivityMainBinding.inflate(layoutInflater)
+        setContentView(binding.root)
+
+        if (savedInstanceState == null) {
+            cargarFragmento(FeedEventosFragment())
+        }
+
+        binding.navegacionInferior.setOnItemSelectedListener { item ->
+            val fragmento = when (item.itemId) {
+                R.id.nav_inicio -> FeedEventosFragment()
+                R.id.nav_explorar -> ExplorarFragment()
+                R.id.nav_categorias -> CategoriasFragment()
+                R.id.nav_historial -> HistorialFragment()
+                R.id.nav_buscar -> BuscarFragment()
+                else -> null
+            }
+            
+            if (fragmento != null) {
+                cargarFragmento(fragmento)
+                true
+            } else {
+                false
             }
         }
     }
-}
 
-@Composable
-fun Greeting(name: String, modifier: Modifier = Modifier) {
-    Text(
-        text = "Hello $name!",
-        modifier = modifier
-    )
-}
-
-@Preview(showBackground = true)
-@Composable
-fun GreetingPreview() {
-    OpenHubTheme {
-        Greeting("Android")
+    fun cargarFragmento(fragmento: Fragment, agregarAlBackStack: Boolean = false) {
+        val transaccion = supportFragmentManager.beginTransaction()
+            .replace(R.id.contenedor_fragmento, fragmento)
+            
+        if (agregarAlBackStack) {
+            transaccion.addToBackStack(null)
+        }
+        transaccion.commit()
+    }
+    
+    fun abrirDetalleEvento() {
+        cargarFragmento(dev.openhub.app.ui.DetalleEventoFragment(), true)
     }
 }

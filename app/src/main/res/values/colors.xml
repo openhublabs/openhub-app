@@ -1,10 +1,43 @@
 <?xml version="1.0" encoding="utf-8"?>
 <resources>
-    <color name="purple_200">#FFBB86FC</color>
-    <color name="purple_500">#FF6200EE</color>
-    <color name="purple_700">#FF3700B3</color>
-    <color name="teal_200">#FF03DAC5</color>
-    <color name="teal_700">#FF018786</color>
-    <color name="black">#FF000000</color>
-    <color name="white">#FFFFFFFF</color>
+
+    <color name="color_fondo">#FFFFFFFF</color>
+    <color name="color_superficie">#FFFFFFFF</color>
+    <color name="color_tarjeta">#FFF8F8F8</color>
+
+    <color name="color_texto_principal">#FF1A1A1A</color>
+    <color name="color_texto_secundario">#FF8E8E93</color>
+    <color name="color_texto_sobre_imagen">#FFFFFFFF</color>
+    <color name="color_texto_descripcion_imagen">#B3FFFFFF</color>
+
+    <color name="color_acento">#FFFF6B35</color>
+    <color name="color_acento_suave">#1AFF6B35</color>
+    <color name="color_acento_secundario">#FF1C3D5A</color>
+
+    <color name="color_etiqueta_fondo">#B3000000</color>
+    <color name="color_etiqueta_texto">#FFFFFFFF</color>
+
+    <color name="color_divisor">#FFF0F0F0</color>
+
+    <color name="color_navegacion_fondo">#FAF9F9F9</color>
+    <color name="color_navegacion_activo">#FF1A1A1A</color>
+    <color name="color_navegacion_inactivo">#FFC7C7CC</color>
+    <color name="color_navegacion_indicador">#14000000</color>
+
+    <color name="color_scrim_inicio">#00000000</color>
+    <color name="color_scrim_fin">#CC000000</color>
+
+    <color name="color_indicador_activo">#FF1A1A1A</color>
+    <color name="color_indicador_inactivo">#FFD1D1D6</color>
+
+    <color name="color_avatar_fondo">#FFFFE0D0</color>
+    <color name="color_avatar_icono">#FFFF6B35</color>
+
+    <color name="color_chip_hackathon">#FFFF6B35</color>
+    <color name="color_chip_conferencia">#FF1C3D5A</color>
+    <color name="color_chip_taller">#FF6C3FAF</color>
+
+    <color name="color_ripple">#0D000000</color>
+    <color name="transparente">#00000000</color>
+
 </resources>

@@ -1,0 +1,167 @@
+<?xml version="1.0" encoding="utf-8"?>
+<com.google.android.material.card.MaterialCardView
+    xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
+    xmlns:tools="http://schemas.android.com/tools"
+    android:id="@+id/tarjeta_evento"
+    android:layout_width="match_parent"
+    android:layout_height="wrap_content"
+    android:layout_marginStart="@dimen/margen_lateral_amplio"
+    android:layout_marginEnd="@dimen/margen_lateral_amplio"
+    android:layout_marginBottom="@dimen/espaciado_tarjetas"
+    android:clickable="true"
+    android:focusable="true"
+    app:cardCornerRadius="@dimen/radio_tarjeta"
+    app:cardElevation="@dimen/elevacion_tarjeta"
+    app:strokeWidth="0dp"
+    app:rippleColor="@color/color_ripple"
+    app:cardBackgroundColor="@color/color_superficie">
+
+    <androidx.constraintlayout.widget.ConstraintLayout
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content">
+
+        <ImageView
+            android:id="@+id/imagen_evento"
+            android:layout_width="0dp"
+            android:layout_height="@dimen/altura_imagen_evento"
+            android:scaleType="centerCrop"
+            android:contentDescription="@string/contenido_imagen_evento"
+            app:layout_constraintTop_toTopOf="parent"
+            app:layout_constraintStart_toStartOf="parent"
+            app:layout_constraintEnd_toEndOf="parent"
+            tools:src="@tools:sample/backgrounds/scenic" />
+
+        <View
+            android:id="@+id/capa_scrim"
+            android:layout_width="0dp"
+            android:layout_height="0dp"
+            android:background="@drawable/degradado_scrim"
+            app:layout_constraintTop_toTopOf="@id/imagen_evento"
+            app:layout_constraintBottom_toBottomOf="@id/imagen_evento"
+            app:layout_constraintStart_toStartOf="@id/imagen_evento"
+            app:layout_constraintEnd_toEndOf="@id/imagen_evento" />
+
+        <TextView
+            android:id="@+id/etiqueta_categoria"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_marginStart="@dimen/espaciado_interno_tarjeta"
+            android:layout_marginTop="@dimen/espaciado_interno_tarjeta"
+            android:background="@drawable/fondo_etiqueta"
+            android:paddingHorizontal="@dimen/padding_etiqueta_horizontal"
+            android:paddingVertical="@dimen/padding_etiqueta_vertical"
+            android:textColor="@color/color_etiqueta_texto"
+            android:textSize="@dimen/texto_etiqueta"
+            android:textAllCaps="true"
+            android:letterSpacing="0.08"
+            android:fontFamily="sans-serif-medium"
+            app:layout_constraintTop_toTopOf="@id/imagen_evento"
+            app:layout_constraintStart_toStartOf="@id/imagen_evento"
+            tools:text="hackathon" />
+
+        <TextView
+            android:id="@+id/etiqueta_tiempo"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_marginStart="@dimen/espaciado_interno_tarjeta"
+            android:layout_marginBottom="@dimen/espaciado_pequeno"
+            android:textColor="@color/color_texto_sobre_imagen"
+            android:textSize="@dimen/texto_etiqueta"
+            android:textAllCaps="true"
+            android:letterSpacing="0.05"
+            android:fontFamily="sans-serif-medium"
+            app:layout_constraintBottom_toTopOf="@id/titulo_evento"
+            app:layout_constraintStart_toStartOf="@id/imagen_evento"
+            tools:text="⚡ 2 hr ago · 7 articulos" />
+
+        <TextView
+            android:id="@+id/titulo_evento"
+            android:layout_width="0dp"
+            android:layout_height="wrap_content"
+            android:layout_marginStart="@dimen/espaciado_interno_tarjeta"
+            android:layout_marginEnd="@dimen/espaciado_interno_tarjeta"
+            android:layout_marginBottom="@dimen/espaciado_pequeno"
+            android:textColor="@color/color_texto_sobre_imagen"
+            android:textSize="@dimen/texto_titulo_grande"
+            android:textStyle="bold"
+            android:fontFamily="sans-serif"
+            android:lineSpacingMultiplier="1.15"
+            android:maxLines="3"
+            android:ellipsize="end"
+            app:layout_constraintBottom_toTopOf="@id/descripcion_evento"
+            app:layout_constraintStart_toStartOf="@id/imagen_evento"
+            app:layout_constraintEnd_toEndOf="@id/imagen_evento"
+            tools:text="hackathon lima 2026: inteligencia artificial para el cambio social" />
+
+        <TextView
+            android:id="@+id/descripcion_evento"
+            android:layout_width="0dp"
+            android:layout_height="wrap_content"
+            android:layout_marginStart="@dimen/espaciado_interno_tarjeta"
+            android:layout_marginEnd="@dimen/espaciado_interno_tarjeta"
+            android:layout_marginBottom="@dimen/espaciado_interno_tarjeta"
+            android:textColor="@color/color_texto_descripcion_imagen"
+            android:textSize="@dimen/texto_subtitulo"
+            android:fontFamily="sans-serif"
+            android:lineSpacingMultiplier="1.25"
+            android:maxLines="2"
+            android:ellipsize="end"
+            app:layout_constraintBottom_toBottomOf="@id/imagen_evento"
+            app:layout_constraintStart_toStartOf="@id/imagen_evento"
+            app:layout_constraintEnd_toEndOf="@id/imagen_evento"
+            tools:text="48 horas de innovacion donde equipos crearan soluciones con ia" />
+
+        <LinearLayout
+            android:id="@+id/fila_metadatos"
+            android:layout_width="0dp"
+            android:layout_height="wrap_content"
+            android:orientation="horizontal"
+            android:gravity="center_vertical"
+            android:paddingHorizontal="@dimen/espaciado_interno_tarjeta"
+            android:paddingTop="@dimen/espaciado_medio"
+            android:paddingBottom="@dimen/espaciado_pequeno"
+            app:layout_constraintTop_toBottomOf="@id/imagen_evento"
+            app:layout_constraintStart_toStartOf="parent"
+            app:layout_constraintEnd_toEndOf="parent">
+
+            <TextView
+                android:id="@+id/texto_ubicacion"
+                android:layout_width="0dp"
+                android:layout_height="wrap_content"
+                android:layout_weight="1"
+                android:textColor="@color/color_texto_secundario"
+                android:textSize="@dimen/texto_caption"
+                android:fontFamily="sans-serif"
+                android:maxLines="1"
+                android:ellipsize="end"
+                tools:text="📍 lima, peru" />
+
+            <TextView
+                android:id="@+id/texto_fecha"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:textColor="@color/color_texto_secundario"
+                android:textSize="@dimen/texto_caption"
+                android:fontFamily="sans-serif"
+                tools:text="📅 28 jun 2026" />
+
+        </LinearLayout>
+
+        <TextView
+            android:id="@+id/texto_clips"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:paddingStart="@dimen/espaciado_interno_tarjeta"
+            android:paddingEnd="@dimen/espaciado_interno_tarjeta"
+            android:paddingBottom="@dimen/espaciado_interno_tarjeta"
+            android:textColor="@color/color_acento"
+            android:textSize="@dimen/texto_caption"
+            android:fontFamily="sans-serif-medium"
+            app:layout_constraintTop_toBottomOf="@id/fila_metadatos"
+            app:layout_constraintStart_toStartOf="parent"
+            tools:text="🎙 6 clips" />
+
+    </androidx.constraintlayout.widget.ConstraintLayout>
+
+</com.google.android.material.card.MaterialCardView>

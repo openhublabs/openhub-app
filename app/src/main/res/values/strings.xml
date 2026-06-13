@@ -1,3 +1,54 @@
+<?xml version="1.0" encoding="utf-8"?>
 <resources>
+
     <string name="app_name">OpenHub</string>
+    <string name="marca_openhub">OpenHub</string>
+    <string name="marca_subtitulo">Tu directorio de eventos tech</string>
+
+    <string name="saludo_buenos_dias">Buenos Dias</string>
+    <string name="saludo_buenas_tardes">Buenas Tardes</string>
+    <string name="saludo_buenas_noches">Buenas Noches</string>
+
+    <string name="subtitulo_feed">Hackathons, conferencias y talleres cerca de ti</string>
+    <string name="seccion_tendencias">Tendencias</string>
+    <string name="seccion_proximos">Proximos Eventos</string>
+
+    <string name="etiqueta_hace_formato">Hace %1$s</string>
+    <string name="etiqueta_articulos_formato">%1$d articulos</string>
+    <string name="etiqueta_clips_formato">%1$d clips</string>
+
+    <string name="nav_inicio">Inicio</string>
+    <string name="nav_explorar">Explorar</string>
+    <string name="nav_categorias">Categorias</string>
+    <string name="nav_historial">Historial</string>
+    <string name="nav_buscar">Buscar</string>
+
+    <string name="placeholder_buscar">Buscar eventos, temas o ciudades...</string>
+    <string name="texto_ver_mas">Ver Mas</string>
+    <string name="texto_inscribirse">Inscribirse</string>
+    <string name="texto_ver_todo">Ver Todo</string>
+
+    <string name="titulo_explorar">Explorar</string>
+    <string name="subtitulo_explorar">Descubre eventos populares y recomendados para ti</string>
+    <string name="titulo_categorias">Categorias</string>
+    <string name="subtitulo_categorias">Filtra eventos por tipo de actividad</string>
+    <string name="titulo_historial">Historial</string>
+    <string name="subtitulo_historial">Eventos que has visitado recientemente</string>
+    <string name="titulo_buscar">Buscar</string>
+    <string name="texto_historial_vacio">Aun no has visitado ningun evento</string>
+    <string name="texto_historial_vacio_detalle">Cuando explores eventos, apareceran aqui</string>
+    <string name="texto_buscar_vacio">Encuentra tu proximo evento</string>
+    <string name="texto_buscar_vacio_detalle">Busca por nombre, categoria o ciudad</string>
+    <string name="texto_sin_resultados">Sin resultados</string>
+    <string name="texto_total_eventos">%1$d eventos disponibles</string>
+    <string name="texto_categoria_todos">Todos</string>
+
+    <string name="contenido_imagen_evento">Imagen del evento</string>
+    <string name="contenido_icono_ubicacion">Ubicacion</string>
+    <string name="contenido_icono_fecha">Fecha</string>
+    <string name="contenido_icono_tiempo">Tiempo</string>
+    <string name="contenido_avatar">Perfil</string>
+    <string name="contenido_icono_buscar">Buscar</string>
+    <string name="contenido_icono_limpiar">Limpiar busqueda</string>
+
 </resources>

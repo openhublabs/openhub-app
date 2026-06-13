@@ -1,0 +1,103 @@
+<?xml version="1.0" encoding="utf-8"?>
+<androidx.constraintlayout.widget.ConstraintLayout
+    xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent"
+    android:background="@color/color_fondo"
+    android:focusableInTouchMode="true">
+
+    <TextView
+        android:id="@+id/texto_titulo_fragmento"
+        android:layout_width="0dp"
+        android:layout_height="wrap_content"
+        android:layout_marginStart="@dimen/margen_lateral_amplio"
+        android:layout_marginTop="@dimen/altura_header"
+        android:layout_marginEnd="@dimen/margen_lateral_amplio"
+        android:textColor="@color/color_texto_principal"
+        android:textSize="@dimen/texto_saludo"
+        android:textStyle="bold"
+        android:letterSpacing="-0.02"
+        android:text="@string/titulo_buscar"
+        app:layout_constraintTop_toTopOf="parent"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintEnd_toEndOf="parent" />
+
+    <EditText
+        android:id="@+id/campo_busqueda"
+        android:layout_width="0dp"
+        android:layout_height="50dp"
+        android:layout_marginStart="@dimen/margen_lateral_amplio"
+        android:layout_marginEnd="@dimen/margen_lateral_amplio"
+        android:layout_marginTop="@dimen/espaciado_medio"
+        android:background="@drawable/fondo_etiqueta"
+        android:backgroundTint="@color/color_tarjeta"
+        android:hint="@string/placeholder_buscar"
+        android:paddingStart="40dp"
+        android:paddingEnd="40dp"
+        android:textColor="@color/color_texto_principal"
+        android:textColorHint="@color/color_texto_secundario"
+        android:textSize="@dimen/texto_subtitulo"
+        android:singleLine="true"
+        android:imeOptions="actionSearch"
+        app:layout_constraintTop_toBottomOf="@id/texto_titulo_fragmento"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintEnd_toEndOf="parent" />
+
+    <ImageView
+        android:layout_width="20dp"
+        android:layout_height="20dp"
+        android:layout_marginStart="12dp"
+        android:src="@drawable/ic_buscar"
+        app:tint="@color/color_texto_secundario"
+        app:layout_constraintTop_toTopOf="@id/campo_busqueda"
+        app:layout_constraintBottom_toBottomOf="@id/campo_busqueda"
+        app:layout_constraintStart_toStartOf="@id/campo_busqueda" />
+
+    <androidx.recyclerview.widget.RecyclerView
+        android:id="@+id/recycler_lista_eventos"
+        android:layout_width="0dp"
+        android:layout_height="0dp"
+        android:layout_marginTop="@dimen/espaciado_medio"
+        android:clipToPadding="false"
+        android:paddingTop="@dimen/espaciado_pequeno"
+        android:paddingBottom="@dimen/espaciado_tarjetas"
+        android:overScrollMode="never"
+        android:scrollbars="none"
+        app:layout_constraintTop_toBottomOf="@id/campo_busqueda"
+        app:layout_constraintBottom_toBottomOf="parent"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintEnd_toEndOf="parent" />
+
+    <LinearLayout
+        android:id="@+id/layout_estado_vacio"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:orientation="vertical"
+        android:gravity="center"
+        android:visibility="gone"
+        app:layout_constraintTop_toBottomOf="@id/campo_busqueda"
+        app:layout_constraintBottom_toBottomOf="parent"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintEnd_toEndOf="parent">
+        
+        <ImageView
+            android:layout_width="64dp"
+            android:layout_height="64dp"
+            android:src="@drawable/ic_buscar"
+            app:tint="@color/color_texto_secundario"
+            android:alpha="0.5"/>
+            
+        <TextView
+            android:id="@+id/texto_estado_vacio"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_marginTop="@dimen/espaciado_medio"
+            android:textColor="@color/color_texto_secundario"
+            android:textSize="@dimen/texto_subtitulo"
+            android:textStyle="bold"
+            android:text="@string/texto_sin_resultados" />
+            
+    </LinearLayout>
+
+</androidx.constraintlayout.widget.ConstraintLayout>

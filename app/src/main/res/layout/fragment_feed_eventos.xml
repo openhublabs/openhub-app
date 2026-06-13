@@ -1,0 +1,95 @@
+<?xml version="1.0" encoding="utf-8"?>
+<androidx.constraintlayout.widget.ConstraintLayout
+    xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
+    android:id="@+id/contenedor_feed"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent"
+    android:background="@color/color_fondo">
+
+    <ImageView
+        android:id="@+id/icono_app"
+        android:layout_width="@dimen/tamano_avatar"
+        android:layout_height="@dimen/tamano_avatar"
+        android:layout_marginStart="@dimen/margen_lateral_amplio"
+        android:layout_marginTop="@dimen/margen_lateral"
+        android:src="@drawable/ic_logo_openhub"
+        android:contentDescription="@string/app_name"
+        app:layout_constraintTop_toTopOf="parent"
+        app:layout_constraintStart_toStartOf="parent" />
+
+    <TextView
+        android:id="@+id/texto_saludo"
+        android:layout_width="0dp"
+        android:layout_height="wrap_content"
+        android:layout_marginStart="@dimen/espaciado_medio"
+        android:layout_marginEnd="@dimen/espaciado_pequeno"
+        android:textColor="@color/color_texto_principal"
+        android:textSize="@dimen/texto_saludo"
+        android:textStyle="bold"
+        android:letterSpacing="-0.02"
+        android:maxLines="2"
+        app:layout_constraintTop_toTopOf="@id/icono_app"
+        app:layout_constraintBottom_toBottomOf="@id/icono_app"
+        app:layout_constraintStart_toEndOf="@id/icono_app"
+        app:layout_constraintEnd_toStartOf="@id/boton_avatar" />
+
+    <ImageView
+        android:id="@+id/boton_avatar"
+        android:layout_width="@dimen/tamano_boton_header"
+        android:layout_height="@dimen/tamano_boton_header"
+        android:layout_marginEnd="@dimen/margen_lateral_amplio"
+        android:background="@drawable/fondo_avatar"
+        android:src="@drawable/ic_persona"
+        android:padding="@dimen/espaciado_pequeno"
+        android:contentDescription="@string/contenido_avatar"
+        app:layout_constraintTop_toTopOf="@id/icono_app"
+        app:layout_constraintBottom_toBottomOf="@id/icono_app"
+        app:layout_constraintEnd_toEndOf="parent" />
+
+    <TextView
+        android:id="@+id/texto_seccion"
+        android:layout_width="0dp"
+        android:layout_height="wrap_content"
+        android:layout_marginStart="@dimen/margen_lateral_amplio"
+        android:layout_marginEnd="@dimen/margen_lateral_amplio"
+        android:layout_marginTop="@dimen/espaciado_grande"
+        android:text="@string/seccion_tendencias"
+        android:textColor="@color/color_texto_principal"
+        android:textSize="@dimen/texto_seccion"
+        android:textStyle="bold"
+        android:letterSpacing="-0.01"
+        app:layout_constraintTop_toBottomOf="@id/icono_app"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintEnd_toEndOf="parent" />
+
+    <TextView
+        android:id="@+id/texto_subtitulo_feed"
+        android:layout_width="0dp"
+        android:layout_height="wrap_content"
+        android:layout_marginStart="@dimen/margen_lateral_amplio"
+        android:layout_marginEnd="@dimen/margen_lateral_amplio"
+        android:layout_marginTop="@dimen/espaciado_minimo"
+        android:text="@string/subtitulo_feed"
+        android:textColor="@color/color_texto_secundario"
+        android:textSize="@dimen/texto_subtitulo"
+        app:layout_constraintTop_toBottomOf="@id/texto_seccion"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintEnd_toEndOf="parent" />
+
+    <androidx.recyclerview.widget.RecyclerView
+        android:id="@+id/recycler_eventos"
+        android:layout_width="0dp"
+        android:layout_height="0dp"
+        android:layout_marginTop="@dimen/espaciado_medio"
+        android:clipToPadding="false"
+        android:paddingTop="@dimen/espaciado_pequeno"
+        android:paddingBottom="@dimen/espaciado_tarjetas"
+        android:overScrollMode="never"
+        android:scrollbars="none"
+        app:layout_constraintTop_toBottomOf="@id/texto_subtitulo_feed"
+        app:layout_constraintBottom_toBottomOf="parent"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintEnd_toEndOf="parent" />
+
+</androidx.constraintlayout.widget.ConstraintLayout>

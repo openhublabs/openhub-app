@@ -1,0 +1,43 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+
+    <dimen name="margen_lateral">16dp</dimen>
+    <dimen name="margen_lateral_amplio">20dp</dimen>
+    <dimen name="espaciado_tarjetas">16dp</dimen>
+    <dimen name="espaciado_interno_tarjeta">16dp</dimen>
+    <dimen name="espaciado_minimo">4dp</dimen>
+    <dimen name="espaciado_pequeno">8dp</dimen>
+    <dimen name="espaciado_medio">12dp</dimen>
+    <dimen name="espaciado_grande">24dp</dimen>
+
+    <dimen name="radio_tarjeta">20dp</dimen>
+    <dimen name="radio_etiqueta">12dp</dimen>
+    <dimen name="radio_avatar">22dp</dimen>
+    <dimen name="radio_boton_icono">20dp</dimen>
+    <dimen name="elevacion_tarjeta">2dp</dimen>
+    <dimen name="elevacion_navegacion">0dp</dimen>
+
+    <dimen name="texto_titulo_grande">22sp</dimen>
+    <dimen name="texto_titulo">18sp</dimen>
+    <dimen name="texto_subtitulo">14sp</dimen>
+    <dimen name="texto_caption">12sp</dimen>
+    <dimen name="texto_etiqueta">11sp</dimen>
+    <dimen name="texto_saludo">28sp</dimen>
+    <dimen name="texto_seccion">20sp</dimen>
+
+    <dimen name="altura_imagen_evento">240dp</dimen>
+    <dimen name="altura_toolbar">56dp</dimen>
+    <dimen name="altura_header">72dp</dimen>
+
+    <dimen name="padding_etiqueta_horizontal">10dp</dimen>
+    <dimen name="padding_etiqueta_vertical">5dp</dimen>
+
+    <dimen name="tamano_icono_pequeno">14dp</dimen>
+    <dimen name="tamano_icono_navegacion">24dp</dimen>
+    <dimen name="tamano_icono_header">20dp</dimen>
+    <dimen name="tamano_avatar">44dp</dimen>
+    <dimen name="tamano_boton_header">40dp</dimen>
+
+    <dimen name="navegacion_padding_bottom">8dp</dimen>
+
+</resources>

@@ -1,4 +1,24 @@
 <?xml version="1.0" encoding="utf-8"?>
 <resources>
-    <style name="Theme.OpenHub" parent="android:Theme.Material.Light.NoActionBar" />
+
+    <style name="Theme.OpenHub" parent="Theme.Material3.Light.NoActionBar">
+        <item name="colorPrimary">@color/color_acento</item>
+        <item name="colorOnPrimary">@color/color_texto_sobre_imagen</item>
+        <item name="colorPrimaryContainer">@color/color_tarjeta</item>
+        <item name="colorSecondary">@color/color_acento_secundario</item>
+        <item name="colorOnSecondary">@color/color_texto_sobre_imagen</item>
+        <item name="colorSurface">@color/color_superficie</item>
+        <item name="colorOnSurface">@color/color_texto_principal</item>
+        <item name="colorOnSurfaceVariant">@color/color_texto_secundario</item>
+        <item name="android:colorBackground">@color/color_fondo</item>
+        <item name="android:statusBarColor">@color/color_fondo</item>
+        <item name="android:windowLightStatusBar">true</item>
+        <item name="android:navigationBarColor">@color/color_navegacion_fondo</item>
+        <item name="android:windowLightNavigationBar">true</item>
+    </style>
+
+    <style name="EstiloIndicadorNav" parent="Widget.Material3.BottomNavigationView.ActiveIndicator">
+        <item name="android:color">@color/color_navegacion_indicador</item>
+    </style>
+
 </resources>
