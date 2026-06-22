@@ -2,6 +2,7 @@ import os
 import hashlib
 import json
 import base64
+import warnings
 from datetime import datetime
 
 import requests
@@ -11,6 +12,8 @@ from firebase_admin import credentials, firestore, initialize_app
 EVENT_SOURCE = "peruanos.dev"
 API_URL = "https://peruanos.dev/api/events"
 FIRESTORE_BATCH_LIMIT = 450
+
+warnings.filterwarnings("ignore", message="Detected filter using positional arguments")
 
 FIREBASE_SERVICE_ACCOUNT_B64 = os.environ.get("FIREBASE_SERVICE_ACCOUNT")
 if not FIREBASE_SERVICE_ACCOUNT_B64:
@@ -92,7 +95,7 @@ def parse_date(date_str: str) -> str:
 
 
 def delete_old_events() -> int:
-    docs = db.collection("events").where(filter=("source", "==", EVENT_SOURCE)).stream()
+    docs = db.collection("events").where("source", "==", EVENT_SOURCE).stream()
     batch = db.batch()
     count = 0
     for doc in docs:
