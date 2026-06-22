@@ -89,6 +89,18 @@ class OpenHubDBHelper(context: Context) :
         }
     }
 
+    fun eliminarEInsertar(eventos: List<Evento>) {
+        val db = writableDatabase
+        db.beginTransaction()
+        try {
+            db.delete(TABLE_EVENTOS, null, null)
+            eventos.forEach { insertarEvento(it) }
+            db.setTransactionSuccessful()
+        } finally {
+            db.endTransaction()
+        }
+    }
+
     fun obtenerTodos(): List<Evento> {
         val db = readableDatabase
         val cursor = db.query(TABLE_EVENTOS, null, null, null, null, null, null)
@@ -103,16 +115,6 @@ class OpenHubDBHelper(context: Context) :
             null, null, null
         )
         return cursorToList(cursor).firstOrNull()
-    }
-
-    fun obtenerPorCategoria(categoria: String): List<Evento> {
-        val db = readableDatabase
-        val cursor = db.query(
-            TABLE_EVENTOS, null,
-            "$COL_CATEGORIA = ?", arrayOf(categoria),
-            null, null, null
-        )
-        return cursorToList(cursor)
     }
 
     fun buscar(query: String): List<Evento> {

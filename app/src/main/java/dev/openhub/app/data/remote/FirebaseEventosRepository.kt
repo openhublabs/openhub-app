@@ -1,5 +1,4 @@
 package dev.openhub.app.data.remote
-
 import com.google.firebase.firestore.FirebaseFirestore
 import dev.openhub.app.model.Evento
 import kotlinx.coroutines.tasks.await
