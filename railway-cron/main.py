@@ -92,7 +92,7 @@ def parse_date(date_str: str) -> str:
 
 
 def delete_old_events() -> int:
-    docs = db.collection("events").where("source", "==", EVENT_SOURCE).stream()
+    docs = db.collection("events").where(filter=("source", "==", EVENT_SOURCE)).stream()
     batch = db.batch()
     count = 0
     for doc in docs:

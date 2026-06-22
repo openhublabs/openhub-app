@@ -1,13 +1,13 @@
 {
   "project_info": {
-    "project_number": "33433273151",
-    "project_id": "dev-openhub",
-    "storage_bucket": "dev-openhub.firebasestorage.app"
+    "project_number": "908924325061",
+    "project_id": "openhub-181a8",
+    "storage_bucket": "openhub-181a8.firebasestorage.app"
   },
   "client": [
     {
       "client_info": {
-        "mobilesdk_app_id": "1:33433273151:android:ac4932e9e1ea710ca9898a",
+        "mobilesdk_app_id": "1:908924325061:android:3567761a0beda65a46b4ac",
         "android_client_info": {
           "package_name": "dev.openhub.app"
         }
@@ -15,7 +15,7 @@
       "oauth_client": [],
       "api_key": [
         {
-          "current_key": "AIzaSyA3jEvNu0g7SCLfle5zad_CUvskDuD6dTQ"
+          "current_key": "AIzaSyAxqZwKQ7zfpxtvBhxLb8L9yl8zszrohr4"
         }
       ],
       "services": {
