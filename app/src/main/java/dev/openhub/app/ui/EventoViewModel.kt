@@ -36,7 +36,6 @@ class EventoViewModel(application: Application) : AndroidViewModel(application) 
                 val eventos = withContext(Dispatchers.IO) {
                     repository.obtenerEventos()
                 }
-                Log.d("EventoViewModel", "Loaded ${eventos.size} events")
                 _eventos.value = eventos
             } catch (e: Exception) {
                 Log.e("EventoViewModel", "Error loading events: ${e.message}", e)
@@ -56,16 +55,10 @@ class EventoViewModel(application: Application) : AndroidViewModel(application) 
 
     fun seleccionarEvento(id: String) {
         viewModelScope.launch(Dispatchers.IO) {
-            val eventos = repository.obtenerDeSQLite()
-            val evento = eventos.find { it.id == id }
+            val evento = repository.obtenerPorId(id)
             withContext(Dispatchers.Main) {
                 _eventoSeleccionado.value = evento
             }
         }
-    }
-
-    fun filtrarPorCategoria(categoria: String) {
-        val todos = _eventos.value ?: return
-        _eventos.value = todos.filter { it.categoria.equals(categoria, ignoreCase = true) }
     }
 }

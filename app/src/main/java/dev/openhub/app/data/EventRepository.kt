@@ -34,8 +34,7 @@ class EventRepository private constructor(context: Context) {
             try {
                 val eventos = firebaseRepo.obtenerEventos()
                 if (eventos.isNotEmpty()) {
-                    dbHelper.eliminarTodo()
-                    dbHelper.insertarEventos(eventos)
+                    dbHelper.eliminarEInsertar(eventos)
                 }
                 eventos
             } catch (e: Exception) {
@@ -51,8 +50,8 @@ class EventRepository private constructor(context: Context) {
         return dbHelper.obtenerTodos()
     }
 
-    fun buscarEnSQLite(query: String): List<Evento> {
-        return dbHelper.buscar(query)
+    fun obtenerPorId(id: String): Evento? {
+        return dbHelper.obtenerPorId(id)
     }
 
     fun seedIfEmpty() {

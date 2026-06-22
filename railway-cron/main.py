@@ -101,7 +101,8 @@ def delete_old_events() -> int:
         if count % FIRESTORE_BATCH_LIMIT == 0:
             batch.commit()
             batch = db.batch()
-    batch.commit()
+    if count > 0:
+        batch.commit()
     return count
 
 

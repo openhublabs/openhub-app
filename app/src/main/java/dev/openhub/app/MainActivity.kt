@@ -5,14 +5,21 @@ import androidx.appcompat.app.AppCompatActivity
 import androidx.fragment.app.Fragment
 import dev.openhub.app.databinding.ActivityMainBinding
 import dev.openhub.app.ui.BuscarFragment
-import dev.openhub.app.ui.CategoriasFragment
-import dev.openhub.app.ui.ExplorarFragment
+import dev.openhub.app.ui.DetalleEventoFragment
 import dev.openhub.app.ui.FeedEventosFragment
-import dev.openhub.app.ui.HistorialFragment
+import dev.openhub.app.ui.ListaEventosFragment
 
 class MainActivity : AppCompatActivity() {
 
     private lateinit var binding: ActivityMainBinding
+
+    private val fragmentInicio by lazy { FeedEventosFragment() }
+    private val fragmentExplorar by lazy { ListaEventosFragment.newInstance(ListaEventosFragment.Modo.EXPLORAR) }
+    private val fragmentCategorias by lazy { ListaEventosFragment.newInstance(ListaEventosFragment.Modo.CATEGORIAS) }
+    private val fragmentHistorial by lazy { ListaEventosFragment.newInstance(ListaEventosFragment.Modo.HISTORIAL) }
+    private val fragmentBuscar by lazy { BuscarFragment() }
+
+    private var fragmentActivo: Fragment? = null
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
@@ -20,21 +27,20 @@ class MainActivity : AppCompatActivity() {
         setContentView(binding.root)
 
         if (savedInstanceState == null) {
-            cargarFragmento(FeedEventosFragment())
+            mostrarFragmento(fragmentInicio)
         }
 
         binding.navegacionInferior.setOnItemSelectedListener { item ->
             val fragmento = when (item.itemId) {
-                R.id.nav_inicio -> FeedEventosFragment()
-                R.id.nav_explorar -> ExplorarFragment()
-                R.id.nav_categorias -> CategoriasFragment()
-                R.id.nav_historial -> HistorialFragment()
-                R.id.nav_buscar -> BuscarFragment()
+                R.id.nav_inicio -> fragmentInicio
+                R.id.nav_explorar -> fragmentExplorar
+                R.id.nav_categorias -> fragmentCategorias
+                R.id.nav_historial -> fragmentHistorial
+                R.id.nav_buscar -> fragmentBuscar
                 else -> null
             }
-            
             if (fragmento != null) {
-                cargarFragmento(fragmento)
+                mostrarFragmento(fragmento)
                 true
             } else {
                 false
@@ -42,17 +48,28 @@ class MainActivity : AppCompatActivity() {
         }
     }
 
-    fun cargarFragmento(fragmento: Fragment, agregarAlBackStack: Boolean = false) {
+    private fun mostrarFragmento(fragmento: Fragment) {
+        if (fragmento === fragmentActivo) return
+
         val transaccion = supportFragmentManager.beginTransaction()
-            .replace(R.id.contenedor_fragmento, fragmento)
-            
-        if (agregarAlBackStack) {
-            transaccion.addToBackStack(null)
+
+        fragmentActivo?.let { transaccion.hide(it) }
+
+        if (fragmento.isAdded) {
+            transaccion.show(fragmento)
+        } else {
+            transaccion.add(R.id.contenedor_fragmento, fragmento)
         }
+
         transaccion.commit()
+        fragmentActivo = fragmento
     }
-    
+
     fun abrirDetalleEvento() {
-        cargarFragmento(dev.openhub.app.ui.DetalleEventoFragment(), true)
+        supportFragmentManager.beginTransaction()
+            .replace(R.id.contenedor_fragmento, DetalleEventoFragment())
+            .addToBackStack(null)
+            .commit()
+        fragmentActivo = null
     }
 }
