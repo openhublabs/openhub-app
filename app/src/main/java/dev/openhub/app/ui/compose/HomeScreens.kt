@@ -102,7 +102,7 @@ fun FeedScreen(
     ) {
         item {
             StaggeredItem(index = 0, hasAnimated = hasAnimated) {
-                Header(title = headerTitle)
+                Header(title = headerTitle, showLogo = true)
             }
         }
 
@@ -226,13 +226,33 @@ fun BuscarScreen(viewModel: EventoViewModel, navController: NavController, share
 }
 
 @Composable
-fun Header(title: String) {
-    Column(modifier = Modifier.padding(start = 24.dp, end = 24.dp, top = 24.dp, bottom = 16.dp)) {
-        Text(
-            text = title, 
-            style = MaterialTheme.typography.displayLarge,
-            color = TextTitle
-        )
+fun Header(title: String, showLogo: Boolean = false) {
+    if (showLogo) {
+        androidx.compose.foundation.layout.Row(
+            modifier = Modifier.padding(start = 24.dp, end = 24.dp, top = 24.dp, bottom = 16.dp),
+            verticalAlignment = androidx.compose.ui.Alignment.CenterVertically
+        ) {
+            androidx.compose.foundation.Image(
+                painter = painterResource(id = R.drawable.app_logo),
+                contentDescription = "Logo",
+                modifier = Modifier
+                    .size(56.dp)
+            )
+            Spacer(modifier = Modifier.width(16.dp))
+            Text(
+                text = title, 
+                style = MaterialTheme.typography.displayLarge,
+                color = TextTitle
+            )
+        }
+    } else {
+        Column(modifier = Modifier.padding(start = 24.dp, end = 24.dp, top = 24.dp, bottom = 16.dp)) {
+            Text(
+                text = title, 
+                style = MaterialTheme.typography.displayLarge,
+                color = TextTitle
+            )
+        }
     }
 }
 
@@ -278,7 +298,10 @@ fun EventCard(
             Column {
                 Box {
                     AsyncImage(
-                        model = evento.imagenUrl,
+                        model = coil.request.ImageRequest.Builder(androidx.compose.ui.platform.LocalContext.current)
+                            .data(evento.imagenUrl)
+                            .crossfade(500)
+                            .build(),
                         contentDescription = evento.titulo,
                         modifier = Modifier
                             .fillMaxWidth()
