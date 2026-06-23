@@ -1,4 +1,5 @@
 import hashlib
+import re
 from datetime import datetime
 
 import requests
@@ -18,9 +19,9 @@ def log(msg: str):
     print(f"[{datetime.now().strftime('%Y-%m-%d %H:%M:%S')}] {msg}")
 
 
-def generate_event_id(title: str, date: str, source: str) -> str:
+def generate_event_id(title: str, date: str) -> str:
     raw = f"{title}|{date}".lower().strip()
-    return f"{source}-{hashlib.md5(raw.encode()).hexdigest()[:16]}"
+    return hashlib.md5(raw.encode()).hexdigest()[:16]
 
 
 def infer_category(tags: list[str]) -> str:
@@ -29,6 +30,19 @@ def infer_category(tags: list[str]) -> str:
         if key in TAG_TO_CATEGORY:
             return TAG_TO_CATEGORY[key]
     return ""
+
+
+def infer_tags_from_url(url: str) -> list[str]:
+    url_lower = url.lower()
+    if "eventbrite.com" in url_lower:
+        match = re.search(r'/d/[^/]+/([^/?]+)', url_lower)
+        if match:
+            return [match.group(1)]
+    if "meetup.com" in url_lower:
+        match = re.search(r'keywords=([^&]+)', url_lower)
+        if match:
+            return [match.group(1)]
+    return []
 
 
 def parse_date(date_str: str) -> str:
@@ -54,7 +68,7 @@ def normalize_event(raw: dict, source: str) -> dict | None:
         return None
 
     date_str = raw.get("date", "")
-    event_id = generate_event_id(title, date_str, source)
+    event_id = generate_event_id(title, date_str)
     tags = raw.get("tags", [])
     is_online = raw.get("is_online", False)
     event_type = (raw.get("type") or "").lower()
@@ -121,6 +135,13 @@ def scrape_peruanos() -> list[dict]:
     return normalized
 
 
+SCRAPE_PROMPT = (
+    "Extract all visible event details including title, full description (if visible), "
+    "date, time, location, organizer, image URL, event URL, whether the event is online, "
+    "and any visible tags or categories on the page."
+)
+
+
 def _firecrawl_scrape_urls(urls: list[str], source: str) -> list[dict]:
     if not FIRECRAWL_API_KEY:
         log(f"[{source}] No FIRECRAWL_API_KEY set, skipping")
@@ -132,12 +153,16 @@ def _firecrawl_scrape_urls(urls: list[str], source: str) -> list[dict]:
 
     firecrawl = Firecrawl(api_key=FIRECRAWL_API_KEY)
 
-    log(f"[{source}] Sending {len(urls)} URLs to Firecrawl (batch)...")
+    log(f"[{source}] Sending {len(urls)} URLs to Firecrawl (batch):")
+    for url in urls:
+        log(f"  - {url}")
+
     try:
         job = firecrawl.batch_scrape(
             urls,
             formats=[{
                 "type": "json",
+                "prompt": SCRAPE_PROMPT,
                 "schema": EVENT_JSON_SCHEMA,
             }],
             poll_interval=2,
@@ -151,11 +176,25 @@ def _firecrawl_scrape_urls(urls: list[str], source: str) -> list[dict]:
     if job and job.data:
         for doc in job.data:
             json_data = doc.json if doc and hasattr(doc, "json") else None
-            if json_data and "events" in json_data:
-                for event in json_data["events"]:
-                    normalized = normalize_event(event, source)
-                    if normalized:
-                        all_events.append(normalized)
+            if not json_data or "events" not in json_data:
+                continue
+
+            source_url = ""
+            if doc and hasattr(doc, "metadata") and doc.metadata:
+                source_url = doc.metadata.get("sourceURL", "") or ""
+
+            url_tags = infer_tags_from_url(source_url) if source_url else []
+            event_count = len(json_data["events"])
+
+            for event in json_data["events"]:
+                existing_tags = event.get("tags") or []
+                if url_tags and not existing_tags:
+                    event["tags"] = url_tags
+                normalized = normalize_event(event, source)
+                if normalized:
+                    all_events.append(normalized)
+
+            log(f"  [{source}] {source_url} -> {event_count} events")
 
     status = getattr(job, "status", "unknown")
     completed = getattr(job, "completed", 0)
