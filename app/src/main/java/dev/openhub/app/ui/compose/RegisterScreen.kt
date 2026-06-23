@@ -2,6 +2,7 @@ package dev.openhub.app.ui.compose
 
 import android.widget.Toast
 import androidx.compose.foundation.background
+import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material3.*
@@ -15,15 +16,14 @@ import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import com.google.firebase.auth.FirebaseAuth
 
-import androidx.compose.foundation.clickable
-
 @Composable
-fun LoginScreen(onLoginSuccess: () -> Unit, onNavigateToRegister: () -> Unit) {
+fun RegisterScreen(onRegisterSuccess: () -> Unit, onNavigateToLogin: () -> Unit) {
     val context = LocalContext.current
     val auth = remember { FirebaseAuth.getInstance() }
 
     var email by remember { mutableStateOf("") }
     var password by remember { mutableStateOf("") }
+    var confirmPassword by remember { mutableStateOf("") }
     var isLoading by remember { mutableStateOf(false) }
 
     Box(
@@ -57,7 +57,7 @@ fun LoginScreen(onLoginSuccess: () -> Unit, onNavigateToRegister: () -> Unit) {
                 )
 
                 Text(
-                    text = "Bienvenido de vuelta",
+                    text = "Crea tu cuenta",
                     fontSize = 16.sp,
                     color = MaterialTheme.colorScheme.onSurfaceVariant,
                     modifier = Modifier.padding(bottom = 32.dp)
@@ -94,6 +94,24 @@ fun LoginScreen(onLoginSuccess: () -> Unit, onNavigateToRegister: () -> Unit) {
                         unfocusedBorderColor = MaterialTheme.colorScheme.outline.copy(alpha = 0.5f)
                     ),
                     shape = RoundedCornerShape(12.dp),
+                    modifier = Modifier.fillMaxWidth().padding(bottom = 16.dp),
+                    singleLine = true
+                )
+
+                OutlinedTextField(
+                    value = confirmPassword,
+                    onValueChange = { confirmPassword = it },
+                    label = { Text("Confirmar Contraseña", color = MaterialTheme.colorScheme.onBackground) },
+                    visualTransformation = PasswordVisualTransformation(),
+                    colors = OutlinedTextFieldDefaults.colors(
+                        focusedTextColor = MaterialTheme.colorScheme.onBackground,
+                        unfocusedTextColor = MaterialTheme.colorScheme.onBackground,
+                        focusedContainerColor = MaterialTheme.colorScheme.surface.copy(alpha = 0.6f),
+                        unfocusedContainerColor = MaterialTheme.colorScheme.surface.copy(alpha = 0.3f),
+                        focusedBorderColor = MaterialTheme.colorScheme.primary,
+                        unfocusedBorderColor = MaterialTheme.colorScheme.outline.copy(alpha = 0.5f)
+                    ),
+                    shape = RoundedCornerShape(12.dp),
                     modifier = Modifier.fillMaxWidth().padding(bottom = 32.dp),
                     singleLine = true
                 )
@@ -103,18 +121,22 @@ fun LoginScreen(onLoginSuccess: () -> Unit, onNavigateToRegister: () -> Unit) {
                 } else {
                     Button(
                         onClick = {
-                            if (email.isNotEmpty() && password.isNotEmpty()) {
-                                isLoading = true
-                                auth.signInWithEmailAndPassword(email.trim(), password.trim())
-                                    .addOnCompleteListener { task ->
-                                        isLoading = false
-                                        if (task.isSuccessful) {
-                                            Toast.makeText(context, "¡Ingreso exitoso!", Toast.LENGTH_SHORT).show()
-                                            onLoginSuccess()
-                                        } else {
-                                            Toast.makeText(context, "Error: ${task.exception?.message}", Toast.LENGTH_LONG).show()
+                            if (email.isNotEmpty() && password.isNotEmpty() && confirmPassword.isNotEmpty()) {
+                                if (password == confirmPassword) {
+                                    isLoading = true
+                                    auth.createUserWithEmailAndPassword(email.trim(), password.trim())
+                                        .addOnCompleteListener { task ->
+                                            isLoading = false
+                                            if (task.isSuccessful) {
+                                                Toast.makeText(context, "¡Registro exitoso!", Toast.LENGTH_SHORT).show()
+                                                onRegisterSuccess()
+                                            } else {
+                                                Toast.makeText(context, "Error: ${task.exception?.message}", Toast.LENGTH_LONG).show()
+                                            }
                                         }
-                                    }
+                                } else {
+                                    Toast.makeText(context, "Las contraseñas no coinciden", Toast.LENGTH_SHORT).show()
+                                }
                             } else {
                                 Toast.makeText(context, "Por favor, llena todos los campos", Toast.LENGTH_SHORT).show()
                             }
@@ -128,7 +150,7 @@ fun LoginScreen(onLoginSuccess: () -> Unit, onNavigateToRegister: () -> Unit) {
                             .height(54.dp)
                     ) {
                         Text(
-                            text = "Ingresar",
+                            text = "Registrarse",
                             fontSize = 16.sp,
                             fontWeight = FontWeight.SemiBold,
                             color = MaterialTheme.colorScheme.onPrimary
@@ -139,11 +161,11 @@ fun LoginScreen(onLoginSuccess: () -> Unit, onNavigateToRegister: () -> Unit) {
                 Spacer(modifier = Modifier.height(16.dp))
 
                 Text(
-                    text = "¿No tienes cuenta? Regístrate aquí",
+                    text = "¿Ya tienes cuenta? Ingresa aquí",
                     color = MaterialTheme.colorScheme.primary,
                     fontWeight = FontWeight.Medium,
                     modifier = Modifier
-                        .clickable { onNavigateToRegister() }
+                        .clickable { onNavigateToLogin() }
                         .padding(8.dp)
                 )
             }

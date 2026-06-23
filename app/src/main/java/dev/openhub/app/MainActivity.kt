@@ -20,15 +20,25 @@ class MainActivity : ComponentActivity() {
         enableEdgeToEdge()
         setContent {
             OpenHubTheme {
-                // Estado para controlar si el usuario ya inició sesión
-                var isLoggedIn by remember { mutableStateOf(false) }
+                // Estado para controlar la pantalla actual
+                var currentRoute by remember { mutableStateOf("login") }
 
-                if (!isLoggedIn) {
-                    LoginScreen(onLoginSuccess = {
-                        isLoggedIn = true // Cambia el estado al completar Firebase con éxito
-                    })
-                } else {
-                    MainScreen(viewModel = viewModel)
+                when (currentRoute) {
+                    "login" -> {
+                        LoginScreen(
+                            onLoginSuccess = { currentRoute = "main" },
+                            onNavigateToRegister = { currentRoute = "register" }
+                        )
+                    }
+                    "register" -> {
+                        dev.openhub.app.ui.compose.RegisterScreen(
+                            onRegisterSuccess = { currentRoute = "main" },
+                            onNavigateToLogin = { currentRoute = "login" }
+                        )
+                    }
+                    "main" -> {
+                        MainScreen(viewModel = viewModel)
+                    }
                 }
             }
         }
