@@ -21,23 +21,28 @@ class MainActivity : ComponentActivity() {
         setContent {
             OpenHubTheme {
                 // Estado para controlar la pantalla actual
-                var currentRoute by remember { mutableStateOf("login") }
+                var currentRoute by remember { mutableStateOf("main") }
 
                 when (currentRoute) {
                     "login" -> {
+                        androidx.activity.compose.BackHandler { currentRoute = "main" }
                         LoginScreen(
                             onLoginSuccess = { currentRoute = "main" },
                             onNavigateToRegister = { currentRoute = "register" }
                         )
                     }
                     "register" -> {
+                        androidx.activity.compose.BackHandler { currentRoute = "login" }
                         dev.openhub.app.ui.compose.RegisterScreen(
                             onRegisterSuccess = { currentRoute = "main" },
                             onNavigateToLogin = { currentRoute = "login" }
                         )
                     }
                     "main" -> {
-                        MainScreen(viewModel = viewModel)
+                        MainScreen(
+                            viewModel = viewModel,
+                            onNavigateToLogin = { currentRoute = "login" }
+                        )
                     }
                 }
             }

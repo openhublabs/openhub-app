@@ -29,6 +29,14 @@ import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.outlined.DateRange
 import androidx.compose.material.icons.outlined.Place
 import androidx.compose.material.icons.outlined.Search
+import androidx.compose.material.icons.outlined.Person
+import androidx.compose.material.icons.outlined.FavoriteBorder
+import androidx.compose.material.icons.filled.Favorite
+import androidx.compose.material3.IconButton
+import androidx.compose.foundation.lazy.LazyRow
+import androidx.compose.ui.platform.LocalContext
+import android.widget.Toast
+import com.google.firebase.auth.FirebaseAuth
 import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.Icon
 import androidx.compose.material3.MaterialTheme
@@ -65,6 +73,7 @@ import dev.openhub.app.ui.theme.TextTitle
 import dev.openhub.app.ui.theme.liquidGlass
 import dev.openhub.app.ui.theme.spatialClickable
 import dev.openhub.app.util.EventoUtils
+import dev.openhub.app.util.EventoUtils.obtenerSaludoDiario
 import java.util.Calendar
 
 @OptIn(ExperimentalSharedTransitionApi::class)
@@ -88,6 +97,14 @@ fun FeedScreen(
             hasAnimated = true
         }
     }
+    val currentTime = System.currentTimeMillis()
+    // Restamos 24 horas para que los eventos de "hoy" todavía se muestren durante todo el día
+    val startOfDay = currentTime - (24 * 60 * 60 * 1000)
+
+    val filteredEventos = eventos.filter {
+        val eventTime = dev.openhub.app.util.EventoUtils.parseDateToLong(it.fecha)
+        eventTime == 0L || eventTime >= startOfDay
+    }.sortedBy { dev.openhub.app.util.EventoUtils.parseDateToLong(it.fecha).takeIf { t -> t > 0L } ?: Long.MAX_VALUE }
 
     // lazycolumn es la lista optimizada vertical que solo dibuja lo que ves en pantalla
     // el padding inferior asegura que las tarjetas no se tapen con el menu de navegacion
@@ -97,7 +114,7 @@ fun FeedScreen(
     ) {
         item {
             StaggeredItem(index = 0, hasAnimated = hasAnimated) {
-                Header(title = headerTitle, showLogo = true)
+                Header(title = headerTitle, showLogo = true, onProfileClick = { navController.navigate(Screen.Perfil.route) })
             }
         }
 
@@ -107,13 +124,13 @@ fun FeedScreen(
                     "Próximos Eventos",
                     style = MaterialTheme.typography.titleLarge,
                     color = TextTitle,
-                    modifier = Modifier.padding(start = 24.dp, top = 24.dp, bottom = 12.dp)
+                    modifier = Modifier.padding(start = 24.dp, top = 12.dp, bottom = 12.dp)
                 )
             }
         }
 
         // recorremos la lista de eventos de forma optimizada
-        itemsIndexed(eventos) { index, evento ->
+        itemsIndexed(filteredEventos) { index, evento ->
             // staggereditem aplica el efecto de cascada sumando el indice al tiempo de retardo
             StaggeredItem(index = 2 + index, hasAnimated = hasAnimated) {
                 EventCard(evento, navController, viewModel, sharedTransitionScope, animatedVisibilityScope)
@@ -162,8 +179,10 @@ fun StaggeredItem(
 fun ExplorarScreen(viewModel: EventoViewModel, navController: NavController, sharedTransitionScope: SharedTransitionScope, animatedVisibilityScope: AnimatedVisibilityScope, innerPadding: PaddingValues) {
     val eventos: List<Evento> by viewModel.eventos.observeAsState(emptyList())
     LazyColumn(modifier = Modifier.fillMaxSize().padding(top = innerPadding.calculateTopPadding()), contentPadding = PaddingValues(bottom = 100.dp)) {
-        item { Header(title = "Explorar", subtitle = "Nuevos mundos y experiencias.") }
-        items(eventos.reversed()) { evento -> EventCard(evento, navController, viewModel, sharedTransitionScope, animatedVisibilityScope) }
+        item { Header(title = "Explorar", subtitle = "Los eventos más populares.") }
+        itemsIndexed(eventos.sortedByDescending { it.clips }) { index, evento -> 
+            EventCard(evento, navController, viewModel, sharedTransitionScope, animatedVisibilityScope, rank = index + 1) 
+        }
     }
 }
 
@@ -171,9 +190,38 @@ fun ExplorarScreen(viewModel: EventoViewModel, navController: NavController, sha
 @Composable
 fun CategoriasScreen(viewModel: EventoViewModel, navController: NavController, sharedTransitionScope: SharedTransitionScope, animatedVisibilityScope: AnimatedVisibilityScope, innerPadding: PaddingValues) {
     val eventos: List<Evento> by viewModel.eventos.observeAsState(emptyList())
+    
+    var selectedCategory by remember { mutableStateOf("Todas") }
+    val categories = listOf("Todas") + eventos.map { it.categoria }.distinct()
+    
+    val filteredEventos = eventos.filter {
+        selectedCategory == "Todas" || it.categoria == selectedCategory
+    }
+
     LazyColumn(modifier = Modifier.fillMaxSize().padding(top = innerPadding.calculateTopPadding()), contentPadding = PaddingValues(bottom = 100.dp)) {
         item { Header(title = "Categorías", subtitle = "Navega por ecosistemas visuales.") }
-        items(eventos.sortedBy { it.categoria }) { evento -> EventCard(evento, navController, viewModel, sharedTransitionScope, animatedVisibilityScope) }
+        
+        item {
+            LazyRow(
+                contentPadding = PaddingValues(horizontal = 24.dp, vertical = 8.dp), 
+                horizontalArrangement = Arrangement.spacedBy(8.dp)
+            ) {
+                items(categories) { cat ->
+                    androidx.compose.material3.FilterChip(
+                        selected = selectedCategory == cat,
+                        onClick = { selectedCategory = cat },
+                        label = { Text(cat) },
+                        colors = androidx.compose.material3.FilterChipDefaults.filterChipColors(
+                            selectedContainerColor = Color.White,
+                            selectedLabelColor = Color.Black
+                        )
+                    )
+                }
+            }
+            Spacer(modifier = Modifier.height(16.dp))
+        }
+
+        items(filteredEventos.sortedBy { it.categoria }) { evento -> EventCard(evento, navController, viewModel, sharedTransitionScope, animatedVisibilityScope) }
     }
 }
 
@@ -181,9 +229,22 @@ fun CategoriasScreen(viewModel: EventoViewModel, navController: NavController, s
 @Composable
 fun HistorialScreen(viewModel: EventoViewModel, navController: NavController, sharedTransitionScope: SharedTransitionScope, animatedVisibilityScope: AnimatedVisibilityScope, innerPadding: PaddingValues) {
     val eventos: List<Evento> by viewModel.eventos.observeAsState(emptyList())
+    val historialIds by viewModel.historial.observeAsState(emptyList())
+    
+    val historialEventos = historialIds.mapNotNull { id -> eventos.find { it.id == id } }
+
     LazyColumn(modifier = Modifier.fillMaxSize().padding(top = innerPadding.calculateTopPadding()), contentPadding = PaddingValues(bottom = 100.dp)) {
         item { Header(title = "Historial", subtitle = "Tus viajes anteriores registrados.") }
-        items(eventos.take(2)) { evento -> EventCard(evento, navController, viewModel, sharedTransitionScope, animatedVisibilityScope) }
+        
+        if (historialEventos.isEmpty()) {
+            item {
+                Text("Aún no tienes un historial de eventos.", color = dev.openhub.app.ui.theme.TextSubtitle, modifier = Modifier.padding(24.dp))
+            }
+        } else {
+            items(historialEventos) { evento -> 
+                EventCard(evento, navController, viewModel, sharedTransitionScope, animatedVisibilityScope) 
+            }
+        }
     }
 }
 
@@ -225,26 +286,34 @@ fun BuscarScreen(viewModel: EventoViewModel, navController: NavController, share
 }
 
 @Composable
-fun Header(title: String, showLogo: Boolean = false) {
+fun Header(title: String, showLogo: Boolean = false, onProfileClick: (() -> Unit)? = null) {
     // cabecera principal con parametro condicional para inyectar el logo nativo
     // alineado a la izquierda con el texto a su derecha
     if (showLogo) {
         Row(
-            modifier = Modifier.padding(start = 24.dp, end = 24.dp, top = 24.dp, bottom = 16.dp),
-            verticalAlignment = Alignment.CenterVertically
+            modifier = Modifier.padding(start = 24.dp, end = 24.dp, top = 24.dp, bottom = 16.dp).fillMaxWidth(),
+            verticalAlignment = Alignment.CenterVertically,
+            horizontalArrangement = Arrangement.SpaceBetween
         ) {
-            Image(
-                painter = painterResource(id = R.drawable.app_logo),
-                contentDescription = "Logo",
-                modifier = Modifier
-                    .size(56.dp)
-            )
-            Spacer(modifier = Modifier.width(16.dp))
-            Text(
-                text = title, 
-                style = MaterialTheme.typography.displayLarge,
-                color = TextTitle
-            )
+            Row(verticalAlignment = Alignment.CenterVertically) {
+                Image(
+                    painter = painterResource(id = R.drawable.app_logo),
+                    contentDescription = "Logo",
+                    modifier = Modifier
+                        .size(56.dp)
+                )
+                Spacer(modifier = Modifier.width(16.dp))
+                Text(
+                    text = title, 
+                    style = MaterialTheme.typography.displayLarge,
+                    color = TextTitle
+                )
+            }
+            if (onProfileClick != null) {
+                IconButton(onClick = onProfileClick) {
+                    Icon(Icons.Outlined.Person, contentDescription = "Perfil", tint = TextTitle)
+                }
+            }
         }
     } else {
         Column(modifier = Modifier.padding(start = 24.dp, end = 24.dp, top = 24.dp, bottom = 16.dp)) {
@@ -286,8 +355,35 @@ fun EventCard(
     navController: NavController,
     viewModel: EventoViewModel,
     sharedTransitionScope: SharedTransitionScope,
-    animatedVisibilityScope: AnimatedVisibilityScope
+    animatedVisibilityScope: AnimatedVisibilityScope,
+    rank: Int? = null
 ) {
+    val context = LocalContext.current
+    val favoritos by viewModel.favoritos.observeAsState(emptySet())
+    val isFavorito = favoritos.contains(evento.id)
+    var showLoginPrompt by remember { mutableStateOf(false) }
+
+    if (showLoginPrompt) {
+        androidx.compose.material3.AlertDialog(
+            onDismissRequest = { showLoginPrompt = false },
+            title = { Text("Sesión requerida") },
+            text = { Text("Debes iniciar sesión para guardar este evento en tus favoritos.") },
+            confirmButton = {
+                androidx.compose.material3.TextButton(onClick = {
+                    showLoginPrompt = false
+                    navController.navigate(Screen.Perfil.route)
+                }) {
+                    Text("Iniciar Sesión")
+                }
+            },
+            dismissButton = {
+                androidx.compose.material3.TextButton(onClick = { showLoginPrompt = false }) {
+                    Text("Cancelar")
+                }
+            }
+        )
+    }
+
     // with inyecta el ambito de transicion compartida para usar sharedbounds
     with(sharedTransitionScope) {
         // contenedor maestro de la tarjeta
@@ -333,10 +429,35 @@ fun EventCard(
                             .padding(horizontal = 10.dp, vertical = 4.dp)
                     ) {
                         Text(
-                            text = evento.categoria, 
+                            text = if (rank != null) "🔥 #$rank  |  ${evento.categoria}" else evento.categoria, 
                             color = Color.White, 
-                            style = MaterialTheme.typography.labelMedium
+                            style = MaterialTheme.typography.labelMedium,
+                            fontWeight = if (rank != null) androidx.compose.ui.text.font.FontWeight.Bold else null
                         )
+                    }
+
+                    Box(
+                        modifier = Modifier
+                            .padding(12.dp)
+                            .align(Alignment.TopEnd)
+                            .background(Color.Black.copy(alpha = 0.5f), CircleShape)
+                    ) {
+                        IconButton(
+                            onClick = { 
+                                if (FirebaseAuth.getInstance().currentUser != null) {
+                                    viewModel.toggleFavorito(evento.id)
+                                } else {
+                                    showLoginPrompt = true
+                                }
+                            },
+                            modifier = Modifier.size(36.dp)
+                        ) {
+                            Icon(
+                                imageVector = if (isFavorito) Icons.Filled.Favorite else Icons.Outlined.FavoriteBorder,
+                                contentDescription = "Favorito",
+                                tint = if (isFavorito) Color.Red else Color.White
+                            )
+                        }
                     }
                 }
 
