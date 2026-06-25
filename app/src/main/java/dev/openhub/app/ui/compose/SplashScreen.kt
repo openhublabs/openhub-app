@@ -29,6 +29,7 @@ import androidx.compose.material3.Text
 import androidx.navigation.NavController
 import dev.openhub.app.R
 import kotlinx.coroutines.delay
+import kotlinx.coroutines.launch
 
 @Composable
 fun SplashScreen(navController: NavController) {
