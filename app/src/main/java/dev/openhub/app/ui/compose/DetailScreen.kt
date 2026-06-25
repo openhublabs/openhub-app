@@ -9,6 +9,7 @@ import androidx.compose.foundation.border
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
+import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
@@ -27,6 +28,7 @@ import androidx.compose.material.icons.automirrored.filled.ArrowBack
 import androidx.compose.material.icons.outlined.ArrowForward
 import androidx.compose.material.icons.outlined.DateRange
 import androidx.compose.material.icons.outlined.Place
+import androidx.compose.material.icons.outlined.Share
 import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
 import androidx.compose.material3.MaterialTheme
@@ -45,6 +47,10 @@ import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.navigation.NavController
+import androidx.compose.ui.platform.LocalContext
+import androidx.compose.ui.platform.LocalUriHandler
+import android.content.Intent
+import android.widget.Toast
 import coil.compose.AsyncImage
 import dev.chrisbanes.haze.HazeState
 import dev.chrisbanes.haze.haze
@@ -66,6 +72,8 @@ fun DetailScreen(
 ) {
     val evento by viewModel.eventoSeleccionado.observeAsState()
     val hazeState = remember { HazeState() }
+    val uriHandler = LocalUriHandler.current
+    val context = LocalContext.current
 
     evento?.let { currentEvento ->
         // scope especial que permite vincular visualmente esta pantalla con la pantalla anterior
@@ -98,13 +106,14 @@ fun DetailScreen(
                             contentScale = ContentScale.Crop
                         )
                         
-                        // fila superpuesta en la parte superior para el boton de volver atras
+                        // fila superpuesta en la parte superior para el boton de volver atras y compartir
                         Row(
                             modifier = Modifier
                                 .fillMaxWidth()
                                 .statusBarsPadding()
                                 .padding(16.dp),
-                            verticalAlignment = Alignment.CenterVertically
+                            verticalAlignment = Alignment.CenterVertically,
+                            horizontalArrangement = Arrangement.SpaceBetween
                         ) {
                             // boton con efecto liquid glass para retroceder
                             IconButton(
@@ -129,6 +138,40 @@ fun DetailScreen(
                                 Icon(
                                     imageVector = Icons.AutoMirrored.Filled.ArrowBack,
                                     contentDescription = "Volver",
+                                    tint = Color.White
+                                )
+                            }
+                            
+                            IconButton(
+                                onClick = {
+                                    val sendIntent: Intent = Intent().apply {
+                                        action = Intent.ACTION_SEND
+                                        putExtra(Intent.EXTRA_TEXT, "¡Mira este evento!: ${currentEvento.titulo} en ${currentEvento.url}")
+                                        type = "text/plain"
+                                    }
+                                    val shareIntent = Intent.createChooser(sendIntent, null)
+                                    context.startActivity(shareIntent)
+                                },
+                                modifier = Modifier
+                                    .clip(CircleShape)
+                                    .hazeChild(state = hazeState, shape = CircleShape, blurRadius = 64.dp, tint = Color.White.copy(alpha = 0.15f))
+                                    .border(
+                                        width = 1.5.dp,
+                                        brush = Brush.verticalGradient(
+                                            colors = listOf(
+                                                Color.White.copy(alpha = 0.6f),
+                                                Color.White.copy(alpha = 0.1f),
+                                                Color.Transparent,
+                                                Color.White.copy(alpha = 0.1f),
+                                                Color.White.copy(alpha = 0.4f)
+                                            )
+                                        ),
+                                        shape = CircleShape
+                                    )
+                            ) {
+                                Icon(
+                                    imageVector = Icons.Outlined.Share,
+                                    contentDescription = "Compartir",
                                     tint = Color.White
                                 )
                             }
@@ -193,8 +236,13 @@ fun DetailScreen(
                             modifier = Modifier
                                 .fillMaxWidth()
                                 .height(60.dp)
-                                // TODO: implementar integracion con el backend para registro de usuario
-                                .spatialClickable { }
+                                .spatialClickable { 
+                                    if (currentEvento.url.isNotEmpty()) {
+                                        uriHandler.openUri(currentEvento.url)
+                                    } else {
+                                        Toast.makeText(context, "Enlace no disponible", Toast.LENGTH_SHORT).show()
+                                    }
+                                }
                                 .background(Color.White.copy(alpha = 0.95f), CircleShape)
                         ) {
                             // centrado horizontal y vertical del texto y el icono

@@ -73,6 +73,7 @@ sealed class Screen(val route: String, val title: String, val icon: ImageVector?
     object Buscar : Screen("buscar", "Buscar", Icons.Outlined.Search)
     object Detalle : Screen("detalle", "Detalle", null)
     object Splash : Screen("splash", "Splash", null)
+    object Perfil : Screen("perfil", "Perfil", null)
 }
 
 val bottomNavItems = listOf(
@@ -85,7 +86,7 @@ val bottomNavItems = listOf(
 
 @OptIn(ExperimentalSharedTransitionApi::class)
 @Composable
-fun MainScreen(viewModel: EventoViewModel) {
+fun MainScreen(viewModel: EventoViewModel, onNavigateToLogin: () -> Unit) {
     val navController = rememberNavController()
     val navBackStackEntry by navController.currentBackStackEntryAsState()
     val currentRoute = navBackStackEntry?.destination?.route
@@ -207,6 +208,9 @@ fun MainScreen(viewModel: EventoViewModel) {
                     }
                     composable(Screen.Detalle.route) {
                         DetailScreen(viewModel, navController, this@SharedTransitionLayout, this)
+                    }
+                    composable(Screen.Perfil.route) {
+                        PerfilScreen(viewModel, navController, onNavigateToLogin)
                     }
                 }
             }
