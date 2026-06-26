@@ -5,22 +5,23 @@ warnings.filterwarnings("ignore", message="Detected filter using positional argu
 
 FIRESTORE_BATCH_LIMIT = 450
 
+# Firebase — validated at startup in main.py (not here, so test_scrape.py can import freely)
 FIREBASE_SERVICE_ACCOUNT_B64 = os.environ.get("FIREBASE_SERVICE_ACCOUNT")
-if not FIREBASE_SERVICE_ACCOUNT_B64:
-    raise ValueError("Missing FIREBASE_SERVICE_ACCOUNT environment variable")
 
 FIRECRAWL_API_KEY = os.environ.get("FIRECRAWL_API_KEY", "")
 
 PERUANOS_API_URL = "https://peruanos.dev/api/events"
 
 EVENTBRITE_URLS = [
-    "https://www.eventbrite.com/d/peru/technology/",
-    "https://www.eventbrite.com/d/online/technology/",
+    ("https://www.eventbrite.com/d/peru/technology/", "Lima"),
+    ("https://www.eventbrite.com/d/argentina--buenos-aires/technology/", "Buenos Aires"),
+    ("https://www.eventbrite.com/d/mexico--ciudad-de-mexico/technology/", "Ciudad de México"),
 ]
 
 MEETUP_URLS = [
-    "https://www.meetup.com/find/?keywords=technology&location=pe--Lima",
-    "https://www.meetup.com/find/?keywords=startup&location=pe--Lima",
+    ("https://www.meetup.com/find/?keywords=technology&location=pe--Lima", "Lima"),
+    ("https://www.meetup.com/find/?keywords=technology&location=ar--Buenos+Aires", "Buenos Aires"),
+    ("https://www.meetup.com/find/?keywords=technology&location=mx--Mexico+City", "Ciudad de México"),
 ]
 
 TAG_TO_CATEGORY = {
@@ -100,6 +101,7 @@ TAG_TO_CATEGORY = {
     "technology": "conferencia",
 }
 
+# Schema for listing pages — extracts all event cards visible on the page
 EVENT_JSON_SCHEMA = {
     "type": "object",
     "properties": {
@@ -124,4 +126,22 @@ EVENT_JSON_SCHEMA = {
         }
     },
     "required": ["events"],
+}
+
+# Schema for individual event detail pages — richer fields from the event page itself
+EVENT_DETAIL_SCHEMA = {
+    "type": "object",
+    "properties": {
+        "title": {"type": "string"},
+        "description": {"type": "string"},
+        "date": {"type": "string"},
+        "time": {"type": "string"},
+        "location": {"type": "string"},
+        "organizer": {"type": "string"},
+        "image_url": {"type": "string"},
+        "url": {"type": "string"},
+        "is_online": {"type": "boolean"},
+        "tags": {"type": "array", "items": {"type": "string"}},
+    },
+    "required": ["title"],
 }

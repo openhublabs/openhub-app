@@ -9,6 +9,10 @@ warnings.filterwarnings("ignore", message='Field name "json"')
 from firebase_admin import credentials, firestore, initialize_app
 
 from config import FIREBASE_SERVICE_ACCOUNT_B64, FIRESTORE_BATCH_LIMIT
+
+if not FIREBASE_SERVICE_ACCOUNT_B64:
+    raise ValueError("Missing FIREBASE_SERVICE_ACCOUNT environment variable")
+
 from scrapers import SCRAPERS
 
 sa_key = json.loads(base64.b64decode(FIREBASE_SERVICE_ACCOUNT_B64).decode("utf-8"))
