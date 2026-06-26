@@ -5,16 +5,35 @@ import com.google.firebase.firestore.FirebaseFirestore
 import dev.openhub.app.model.Evento
 import kotlinx.coroutines.tasks.await
 
-class FirebaseEventosRepository {
+class FirebaseEventosRepository : IEventosRepository {
 
     private val db = FirebaseFirestore.getInstance()
     private val eventosRef = db.collection("events")
 
-    suspend fun obtenerEventos(): List<Evento> {
+    override suspend fun obtenerEventos(): List<Evento> {
         val snapshot = eventosRef.get().await()
         return snapshot.documents.mapNotNull { doc ->
             doc.toEvento()
         }
+    }
+
+    override suspend fun obtenerEventoPorId(id: String): Evento? {
+        // TODO: Backend team, implement this fetch
+        val snapshot = eventosRef.document(id).get().await()
+        return snapshot.toEvento()
+    }
+
+    override suspend fun crearEvento(evento: Evento) {
+        // TODO: Backend team, connect this to Firestore
+        // eventosRef.add(evento).await()
+    }
+
+    override suspend fun actualizarEvento(evento: Evento) {
+        // TODO: Backend team, connect this to Firestore
+    }
+
+    override suspend fun eliminarEvento(id: String) {
+        // TODO: Backend team, connect this to Firestore
     }
 
     private fun DocumentSnapshot.toEvento(): Evento? {

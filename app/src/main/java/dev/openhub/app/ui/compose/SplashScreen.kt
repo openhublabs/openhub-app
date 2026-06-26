@@ -12,6 +12,8 @@ import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.shape.RoundedCornerShape
+import androidx.compose.foundation.shape.CircleShape
+import androidx.compose.ui.layout.ContentScale
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.remember
@@ -36,43 +38,38 @@ fun SplashScreen(navController: NavController) {
     // variables de estado animables para controlar escala, opacidad y desenfoque inicial
     val scale = remember { Animatable(1.4f) }
     val alpha = remember { Animatable(0f) }
-    val blur = remember { Animatable(32f) }
+    // blur removed for performance
 
     LaunchedEffect(Unit) {
         // animacion de entrada: la imagen se reduce, aparece y se enfoca simulando un aterrizaje suave
         launch {
             scale.animateTo(
                 targetValue = 1f,
-                animationSpec = tween(durationMillis = 1500, easing = FastOutSlowInEasing)
+                animationSpec = tween(durationMillis = 800, easing = FastOutSlowInEasing)
             )
         }
         launch {
             alpha.animateTo(
                 targetValue = 1f,
-                animationSpec = tween(durationMillis = 1200, easing = FastOutSlowInEasing)
+                animationSpec = tween(durationMillis = 600, easing = FastOutSlowInEasing)
             )
         }
-        launch {
-            blur.animateTo(
-                targetValue = 0f,
-                animationSpec = tween(durationMillis = 1500, easing = FastOutSlowInEasing)
-            )
-        }
+        // blur animation removed
         // tiempo de espera en pantalla antes de iniciar la animacion de salida
-        delay(2200)
+        delay(1200)
         
         // animacion de salida: el logo se acerca hacia la camara y se desvanece
         // esto crea una ilusion de inmersion antes de cargar el feed
         launch {
             scale.animateTo(
                 targetValue = 1.3f,
-                animationSpec = tween(durationMillis = 600, easing = FastOutSlowInEasing)
+                animationSpec = tween(durationMillis = 400, easing = FastOutSlowInEasing)
             )
         }
         launch {
             alpha.animateTo(
                 targetValue = 0f,
-                animationSpec = tween(durationMillis = 500, easing = FastOutSlowInEasing)
+                animationSpec = tween(durationMillis = 300, easing = FastOutSlowInEasing)
             )
         }
         
@@ -89,7 +86,7 @@ fun SplashScreen(navController: NavController) {
     Box(
         modifier = Modifier
             .fillMaxSize()
-            .background(Color.Black),
+            .background(Color.White),
         contentAlignment = Alignment.Center
     ) {
         // columna central que agrupa el logo y el titulo y aplica los valores de la animacion
@@ -99,13 +96,15 @@ fun SplashScreen(navController: NavController) {
                 .scale(scale.value)
                 .alpha(alpha.value)
         ) {
-            // imagen del logo con esquinas redondeadas
+            // imagen del logo con esquinas redondeadas, fondo blanco estricto para evitar bordes negros del PNG
             Image(
                 painter = painterResource(id = R.drawable.app_logo),
                 contentDescription = "OpenHub Logo",
+                contentScale = ContentScale.Crop,
                 modifier = Modifier
-                    .size(160.dp)
-                    .clip(RoundedCornerShape(40.dp))
+                    .size(180.dp)
+                    .clip(CircleShape)
+                    .scale(1.25f)
             )
             
             // espacio separador entre logo y texto
@@ -115,7 +114,7 @@ fun SplashScreen(navController: NavController) {
             // esto le da el aspecto cinematografico
             Text(
                 text = "Open Hub",
-                color = Color.White,
+                color = Color.Black,
                 style = androidx.compose.material3.MaterialTheme.typography.displayMedium.copy(
                     letterSpacing = (-1).sp
                 )
