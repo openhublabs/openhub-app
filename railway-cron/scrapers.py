@@ -7,6 +7,7 @@ from firecrawl import Firecrawl
 
 from config import (
     EVENTBRITE_URLS,
+    EVENT_DETAIL_SCHEMA,
     EVENT_JSON_SCHEMA,
     FIRECRAWL_API_KEY,
     MEETUP_URLS,
@@ -102,6 +103,16 @@ TITLE_CATEGORY_KEYWORDS: dict[str, str] = {
     "marketing": "marketing",
     "growth": "marketing",
     "seo": "marketing",
+    "technology": "conferencia",
+    "tech": "conferencia",
+    "innovation": "conferencia",
+    "data": "conferencia",
+    "blockchain": "conferencia",
+    "web3": "conferencia",
+    "software": "conferencia",
+    "developer": "conferencia",
+    "coding": "conferencia",
+    "programming": "conferencia",
 }
 
 
@@ -150,42 +161,96 @@ def parse_date(date_str: str) -> str:
     return f"{dt.day} {meses[dt.month - 1]} {dt.year}"
 
 
-def normalize_event(raw: dict, source: str, url_tags: list[str] | None = None) -> dict | None:
-    title = (raw.get("title") or "").strip()
-    if not title:
-        return None
+def passes_quality_filter(merged: dict, url_tags: list[str]) -> tuple[bool, list[str]]:
+    """
+    Step 4 — Quality gate applied AFTER detail enrichment (merged listing + detail fields).
 
-    date_str = raw.get("date", "")
-    event_id = generate_event_id(title, date_str)
-    tags = raw.get("tags", [])
+    Returns (passes: bool, missing_fields: list[str]).
+
+    Required fields:
+      - title       : non-empty string
+      - url         : non-empty string
+      - date        : non-empty (raw date string from scrape)
+      - location    : non-empty (venue or "Online")
+      - image_url   : non-empty URL
+      - description : non-empty text
+      - category    : must be inferrable from tags or title (no blank categoria)
+    """
+    missing = []
+
+    if not (merged.get("title") or "").strip():
+        missing.append("title")
+    if not (merged.get("url") or "").strip():
+        missing.append("url")
+    if not (merged.get("date") or "").strip():
+        missing.append("date")
+    if not (merged.get("location") or "").strip():
+        missing.append("location")
+    if not (merged.get("image_url") or "").strip():
+        missing.append("image_url")
+    if not (merged.get("description") or "").strip():
+        missing.append("description")
+
+    # Category check — must be inferable (hard reject if not a recognizable tech event)
+    tags = merged.get("tags", [])
+    title = merged.get("title", "")
+    category = (
+        infer_category(tags)
+        or infer_category_from_title(title)
+        or infer_category(url_tags)
+    )
+    if not category:
+        missing.append("categoria")
+
+    return (len(missing) == 0, missing)
+
+
+def normalize_event(merged: dict, source: str, url_tags: list[str] | None = None, ciudad: str = "") -> dict:
+    """
+    Convert a merged (listing + detail) raw dict into the final Firestore document shape.
+    Assumes passes_quality_filter() has already been called and passed.
+    """
     url_tags = url_tags or []
-    is_online = raw.get("is_online", False)
-    event_type = (raw.get("type") or "").lower()
+    tags = merged.get("tags", [])
+
+    is_online = merged.get("is_online", False)
+    event_type = (merged.get("type") or "").lower()
     if event_type in ("online", "virtual"):
         is_online = True
 
-    category = infer_category(tags) or infer_category_from_title(title) or infer_category(url_tags)
+    category = (
+        infer_category(tags)
+        or infer_category_from_title(merged.get("title", ""))
+        or infer_category(url_tags)
+    )
+
+    date_str = merged.get("date", "")
+    title = (merged.get("title") or "").strip()
+    event_id = generate_event_id(title, date_str)
     final_tags = tags if tags else url_tags
 
     return {
         "id": event_id,
         "source": source,
         "titulo": title,
-        "descripcion": raw.get("description", ""),
+        "descripcion": merged.get("description", ""),
         "categoria": category,
-        "ubicacion": raw.get("location", ""),
+        "ciudad": ciudad,
+        "ubicacion": merged.get("location", ""),
         "fecha": parse_date(date_str),
-        "horaInicio": raw.get("time", ""),
+        "horaInicio": merged.get("time", ""),
         "horaFin": "",
-        "organizador": raw.get("organizer", ""),
-        "imagenUrl": raw.get("image_url", ""),
-        "url": raw.get("url", ""),
+        "organizador": merged.get("organizer", ""),
+        "imagenUrl": merged.get("image_url", ""),
+        "url": merged.get("url", ""),
         "isOnline": is_online,
         "clips": 0,
         "tiempoTexto": "",
         "tags": final_tags,
     }
 
+
+# ── peruanos.dev ─────────────────────────────────────────────────────────────
 
 def scrape_peruanos() -> list[dict]:
     log("[peruanos.dev] Fetching from API...")
@@ -219,15 +284,62 @@ def scrape_peruanos() -> list[dict]:
             "type": event.get("type", ""),
             "tags": event.get("tags", []),
         }
-        normalized_event = normalize_event(raw, "peruanos.dev")
-        if normalized_event:
-            normalized.append(normalized_event)
+        passes, missing = passes_quality_filter(raw, [])
+        if passes:
+            normalized.append(normalize_event(raw, "peruanos.dev", ciudad="Lima"))
+        else:
+            log(f"  [peruanos.dev] SKIP '{raw['title'][:50]}' — missing: {missing}")
 
     log(f"[peruanos.dev] Got {len(normalized)} events")
     return normalized
 
 
-def _firecrawl_scrape_urls(urls: list[str], source: str) -> list[dict]:
+# ── Firecrawl helpers ─────────────────────────────────────────────────────────
+
+def _scrape_listing(firecrawl: Firecrawl, url: str) -> list[dict]:
+    """Step 1 — Scrape the listing page, return list of raw event dicts."""
+    try:
+        result = firecrawl.scrape(
+            url,
+            formats=[{"type": "json", "schema": EVENT_JSON_SCHEMA}],
+        )
+        json_data = result.json if result and hasattr(result, "json") else None
+        if json_data and "events" in json_data:
+            return json_data["events"]
+    except Exception as e:
+        log(f"  [listing] Error scraping {url[:60]}: {e}")
+    return []
+
+
+def _scrape_event_detail(firecrawl: Firecrawl, event_url: str) -> dict:
+    """Step 2 — Scrape the individual event page, return enriched fields (or empty dict)."""
+    try:
+        result = firecrawl.scrape(
+            event_url,
+            formats=[{"type": "json", "schema": EVENT_DETAIL_SCHEMA}],
+        )
+        detail = result.json if result and hasattr(result, "json") else None
+        return detail if isinstance(detail, dict) else {}
+    except Exception as e:
+        log(f"    [detail] Error scraping {event_url[:60]}: {e}")
+        return {}
+
+
+def _merge(listing_event: dict, detail: dict) -> dict:
+    """
+    Step 3 — Merge listing + detail fields.
+    Detail wins for any field it provides (it has more context from the full event page).
+    """
+    merged = {**listing_event}
+    for key in ["title", "description", "date", "time", "location", "organizer", "image_url", "is_online", "tags"]:
+        if detail.get(key):
+            merged[key] = detail[key]
+    return merged
+
+
+# ── Main Firecrawl scrape loop ────────────────────────────────────────────────
+
+def _firecrawl_scrape_urls(urls: list[tuple[str, str]], source: str) -> list[dict]:
     if not FIRECRAWL_API_KEY:
         log(f"[{source}] No FIRECRAWL_API_KEY set, skipping")
         return []
@@ -237,39 +349,51 @@ def _firecrawl_scrape_urls(urls: list[str], source: str) -> list[dict]:
         return []
 
     firecrawl = Firecrawl(api_key=FIRECRAWL_API_KEY)
-
     all_events = []
-    for url in urls:
-        log(f"  [{source}] Scraping {url}")
-        try:
-            result = firecrawl.scrape(
-                url,
-                formats=[{"type": "json", "schema": EVENT_JSON_SCHEMA}],
-            )
-        except Exception as e:
-            log(f"  [{source}] Error: {e}")
+
+    for listing_url, ciudad in urls:
+        log(f"  [{source}] Scraping listing: {listing_url}")
+
+        # ── Step 1: Listing scrape ───────────────────────────────────────────
+        raw_events = _scrape_listing(firecrawl, listing_url)
+        if not raw_events:
+            log(f"  [{source}] No events found on listing page")
             continue
 
-        json_data = result.json if result and hasattr(result, "json") else None
-        if not json_data or "events" not in json_data:
-            log(f"  [{source}] No events found")
-            continue
+        log(f"  [{source}] Found {len(raw_events)} raw events on listing")
 
-        source_url = url
-        if result and hasattr(result, "metadata") and result.metadata:
-            source_url = getattr(result.metadata, "source_url", "") or url
+        url_tags = infer_tags_from_url(listing_url)
+        accepted = 0
+        skipped = 0
 
-        url_tags = infer_tags_from_url(source_url)
-        event_count = len(json_data["events"])
+        for raw in raw_events:
+            event_url = (raw.get("url") or "").strip()
+            if not event_url:
+                skipped += 1
+                continue
 
-        for event in json_data["events"]:
-            normalized = normalize_event(event, source, url_tags=url_tags)
-            if normalized:
-                all_events.append(normalized)
+            # ── Step 2: Detail scrape ────────────────────────────────────────
+            log(f"    [{source}] Detail: {event_url[:70]}")
+            detail = _scrape_event_detail(firecrawl, event_url)
 
-        log(f"  [{source}] {source_url} -> {event_count} events")
+            # ── Step 3: Merge ────────────────────────────────────────────────
+            merged = _merge(raw, detail)
 
-    log(f"[{source}] Done — {len(all_events)} events from {len(urls)} URLs")
+            # ── Step 4: Quality filter ───────────────────────────────────────
+            passes, missing = passes_quality_filter(merged, url_tags)
+            if not passes:
+                skipped += 1
+                log(f"    [{source}] SKIP '{(merged.get('title') or '')[:45]}' — missing: {missing}")
+                continue
+
+            # ── Step 5: Normalize → add to results ──────────────────────────
+            event = normalize_event(merged, source, url_tags=url_tags, ciudad=ciudad)
+            all_events.append(event)
+            accepted += 1
+
+        log(f"  [{source}] {listing_url} → accepted {accepted}, skipped {skipped}")
+
+    log(f"[{source}] Done — {len(all_events)} quality events from {len(urls)} URLs")
     return all_events
 
 
