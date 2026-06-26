@@ -65,6 +65,7 @@ dependencies {
     implementation(libs.androidx.compose.navigation)
     implementation(libs.androidx.compose.runtime.livedata)
     implementation(libs.coil.compose)
+    implementation("androidx.palette:palette-ktx:1.0.0")
     implementation(libs.haze)
     implementation(libs.haze.materials)
 

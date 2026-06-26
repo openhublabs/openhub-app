@@ -10,6 +10,9 @@ import androidx.compose.animation.fadeIn
 import androidx.compose.animation.fadeOut
 import androidx.compose.animation.slideInVertically
 import androidx.compose.animation.slideOutVertically
+import androidx.compose.animation.scaleIn
+import androidx.compose.animation.core.spring
+import androidx.compose.animation.core.Spring
 import androidx.compose.foundation.background
 import androidx.compose.foundation.border
 import androidx.compose.foundation.clickable
@@ -25,11 +28,12 @@ import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.material.icons.Icons
-import androidx.compose.material.icons.outlined.Category
+import androidx.compose.material.icons.outlined.GridOn
 import androidx.compose.material.icons.outlined.DateRange
 import androidx.compose.material.icons.outlined.Explore
 import androidx.compose.material.icons.outlined.Home
 import androidx.compose.material.icons.outlined.Search
+import androidx.compose.material.icons.outlined.Apps
 import androidx.compose.material3.Icon
 import androidx.compose.material3.Scaffold
 import androidx.compose.runtime.Composable
@@ -49,11 +53,7 @@ import androidx.compose.ui.graphics.vector.ImageVector
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.viewinterop.AndroidView
-import androidx.media3.common.MediaItem
-import androidx.media3.common.Player
-import androidx.media3.exoplayer.ExoPlayer
-import androidx.media3.ui.AspectRatioFrameLayout
-import androidx.media3.ui.PlayerView
+// imports media3 removed
 import androidx.navigation.NavController
 import androidx.navigation.compose.NavHost
 import androidx.navigation.compose.composable
@@ -64,11 +64,14 @@ import dev.chrisbanes.haze.haze
 import dev.chrisbanes.haze.hazeChild
 import dev.openhub.app.R
 import dev.openhub.app.ui.EventoViewModel
+import dev.openhub.app.ui.theme.WhiteBackground
+import dev.openhub.app.ui.theme.LiquidGlassStrongShadow
+import dev.openhub.app.ui.theme.liquidGlass
 
 sealed class Screen(val route: String, val title: String, val icon: ImageVector?) {
     object Feed : Screen("feed", "Inicio", Icons.Outlined.Home)
     object Explorar : Screen("explorar", "Explorar", Icons.Outlined.Explore)
-    object Categorias : Screen("categorias", "Categorías", Icons.Outlined.Category)
+    object Descifra : Screen("descifra", "Descifra", Icons.Outlined.Apps)
     object Historial : Screen("historial", "Historial", Icons.Outlined.DateRange)
     object Buscar : Screen("buscar", "Buscar", Icons.Outlined.Search)
     object Detalle : Screen("detalle", "Detalle", null)
@@ -79,7 +82,7 @@ sealed class Screen(val route: String, val title: String, val icon: ImageVector?
 val bottomNavItems = listOf(
     Screen.Feed,
     Screen.Explorar,
-    Screen.Categorias,
+    Screen.Descifra,
     Screen.Historial,
     Screen.Buscar
 )
@@ -92,41 +95,7 @@ fun MainScreen(viewModel: EventoViewModel, onNavigateToLogin: () -> Unit) {
     val currentRoute = navBackStackEntry?.destination?.route
     val hazeState = remember { HazeState() }
 
-    val context = LocalContext.current
-    
-    val videoUrls = listOf(
-        "android.resource://${context.packageName}/${R.raw.video_night}",
-        "android.resource://${context.packageName}/${R.raw.video_explore}",
-        "android.resource://${context.packageName}/${R.raw.video_day}"
-    )
-
-    val exoPlayer = remember {
-        ExoPlayer.Builder(context).build().apply {
-            repeatMode = Player.REPEAT_MODE_ALL
-            volume = 0f
-        }
-    }
-
-    DisposableEffect(Unit) {
-        onDispose { exoPlayer.release() }
-    }
-
-    var activeVideoUrl by remember { mutableStateOf<String?>(null) }
-
-    LaunchedEffect(currentRoute) {
-        val targetVideoUrl = when (currentRoute) {
-            Screen.Feed.route -> videoUrls[0]
-            Screen.Explorar.route, Screen.Detalle.route -> videoUrls[1]
-            else -> videoUrls[2]
-        }
-        
-        if (activeVideoUrl != targetVideoUrl) {
-            activeVideoUrl = targetVideoUrl
-            exoPlayer.setMediaItem(MediaItem.fromUri(targetVideoUrl))
-            exoPlayer.prepare()
-            exoPlayer.playWhenReady = true
-        }
-    }
+    // Se han eliminado los videos de fondo para el tema claro minimalista
 
     SharedTransitionLayout {
         Scaffold(
@@ -134,11 +103,11 @@ fun MainScreen(viewModel: EventoViewModel, onNavigateToLogin: () -> Unit) {
             containerColor = Color.Transparent,
             bottomBar = {
                 AnimatedVisibility(
-                    visible = currentRoute != Screen.Detalle.route && currentRoute != Screen.Splash.route,
-                    enter = fadeIn(animationSpec = tween(400, delayMillis = 400)) +
-                            slideInVertically(animationSpec = tween(400, delayMillis = 400), initialOffsetY = { it }),
-                    exit = fadeOut(animationSpec = tween(400)) +
-                           slideOutVertically(animationSpec = tween(400), targetOffsetY = { it })
+                    visible = currentRoute != Screen.Detalle.route && currentRoute != Screen.Splash.route && currentRoute != Screen.Perfil.route,
+                    enter = fadeIn(animationSpec = tween(250)) +
+                            slideInVertically(animationSpec = spring(stiffness = Spring.StiffnessMediumLow), initialOffsetY = { it }),
+                    exit = fadeOut(animationSpec = tween(250)) +
+                           slideOutVertically(animationSpec = tween(250), targetOffsetY = { it })
                 ) {
                     Box(modifier = Modifier.navigationBarsPadding()) {
                         GlassBottomNavigation(navController = navController, currentRoute = currentRoute, hazeState = hazeState)
@@ -149,43 +118,35 @@ fun MainScreen(viewModel: EventoViewModel, onNavigateToLogin: () -> Unit) {
             Box(
                 modifier = Modifier
                     .fillMaxSize()
-                    .background(Color.Black)
+                    .background(WhiteBackground)
             ) {
-                if (currentRoute != Screen.Splash.route) {
-                    Box(modifier = Modifier.matchParentSize().haze(hazeState)) {
-                        AndroidView(
-                            factory = { ctx ->
-                                PlayerView(ctx).apply {
-                                    player = exoPlayer
-                                    useController = false
-                                    resizeMode = AspectRatioFrameLayout.RESIZE_MODE_ZOOM
-                                    layoutParams = FrameLayout.LayoutParams(ViewGroup.LayoutParams.MATCH_PARENT, ViewGroup.LayoutParams.MATCH_PARENT)
-                                }
-                            },
-                            modifier = Modifier.fillMaxSize()
+                // Subtle top gradient like Particle News
+                Box(modifier = Modifier
+                    .fillMaxWidth()
+                    .height(400.dp)
+                    .background(
+                        Brush.verticalGradient(
+                            colors = listOf(Color(0xFFEBF2F8), Color.Transparent)
                         )
-
-                        Box(
-                            modifier = Modifier
-                                .fillMaxSize()
-                                .background(Color.Black.copy(alpha = 0.4f))
-                        )
-                    }
-                }
-
-                NavHost(
+                    )
+                )
+                
+                Box(modifier = Modifier.fillMaxSize()) {
+                    NavHost(
                     navController = navController,
                     startDestination = Screen.Splash.route,
                     enterTransition = {
-                        val duration = if (initialState.destination.route == Screen.Splash.route) 400 else 150
-                        fadeIn(animationSpec = tween(duration))
+                        fadeIn(animationSpec = tween(300))
                     },
                     exitTransition = {
-                        val duration = if (targetState.destination.route == Screen.Splash.route) 400 else 150
-                        fadeOut(animationSpec = tween(duration))
+                        fadeOut(animationSpec = tween(300))
                     },
-                    popEnterTransition = { fadeIn(animationSpec = tween(150)) },
-                    popExitTransition = { fadeOut(animationSpec = tween(150)) },
+                    popEnterTransition = {
+                        fadeIn(animationSpec = tween(300))
+                    },
+                    popExitTransition = {
+                        fadeOut(animationSpec = tween(300))
+                    },
                     modifier = Modifier.fillMaxSize()
                 ) {
                     composable(Screen.Splash.route) {
@@ -197,8 +158,14 @@ fun MainScreen(viewModel: EventoViewModel, onNavigateToLogin: () -> Unit) {
                     composable(Screen.Explorar.route) {
                         ExplorarScreen(viewModel, navController, this@SharedTransitionLayout, this, innerPadding)
                     }
-                    composable(Screen.Categorias.route) {
-                        CategoriasScreen(viewModel, navController, this@SharedTransitionLayout, this, innerPadding)
+                    composable(Screen.Descifra.route) {
+                        DescifraScreen(
+                            viewModel = viewModel,
+                            navController = navController,
+                            sharedTransitionScope = this@SharedTransitionLayout,
+                            animatedVisibilityScope = this,
+                            innerPadding = innerPadding
+                        )
                     }
                     composable(Screen.Historial.route) {
                         HistorialScreen(viewModel, navController, this@SharedTransitionLayout, this, innerPadding)
@@ -215,6 +182,7 @@ fun MainScreen(viewModel: EventoViewModel, onNavigateToLogin: () -> Unit) {
                 }
             }
         }
+        }
     }
 }
 
@@ -222,25 +190,11 @@ fun MainScreen(viewModel: EventoViewModel, onNavigateToLogin: () -> Unit) {
 fun GlassBottomNavigation(navController: NavController, currentRoute: String?, hazeState: HazeState) {
     Row(
         modifier = Modifier
-            .padding(horizontal = 24.dp, vertical = 24.dp)
+            .padding(horizontal = 32.dp, vertical = 24.dp)
             .fillMaxWidth()
-            .height(72.dp)
-            .shadow(32.dp, CircleShape, spotColor = Color.Black.copy(alpha = 0.6f))
-            .clip(CircleShape)
-            .hazeChild(state = hazeState, shape = CircleShape, blurRadius = 64.dp, tint = Color.White.copy(alpha = 0.15f))
-            .border(
-                width = 1.5.dp, 
-                brush = Brush.verticalGradient(
-                    colors = listOf(
-                        Color.White.copy(alpha = 0.6f),
-                        Color.White.copy(alpha = 0.1f),
-                        Color.Transparent,
-                        Color.White.copy(alpha = 0.1f),
-                        Color.White.copy(alpha = 0.4f)
-                    )
-                ), 
-                shape = CircleShape
-            )
+            .height(64.dp)
+            .shadow(24.dp, CircleShape, spotColor = LiquidGlassStrongShadow)
+            .background(Color(0xE6FFFFFF), CircleShape) // Translucent white instead of haze
             .padding(horizontal = 8.dp),
         horizontalArrangement = Arrangement.SpaceBetween,
         verticalAlignment = Alignment.CenterVertically
@@ -265,7 +219,7 @@ fun GlassBottomNavigation(navController: NavController, currentRoute: String?, h
                     Icon(
                         imageVector = item.icon,
                         contentDescription = item.title,
-                        tint = if (isSelected) Color.White else Color.White.copy(alpha = 0.4f),
+                        tint = if (isSelected) Color.Black else Color.Black.copy(alpha = 0.4f),
                         modifier = Modifier.size(if (isSelected) 28.dp else 24.dp)
                     )
                 }

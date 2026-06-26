@@ -2,23 +2,23 @@ package dev.openhub.app.ui.theme
 
 import android.app.Activity
 import androidx.compose.material3.MaterialTheme
-import androidx.compose.material3.darkColorScheme
+import androidx.compose.material3.lightColorScheme
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.SideEffect
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.platform.LocalView
 import androidx.core.view.WindowCompat
 
-private val CinematicColorScheme = darkColorScheme(
-    primary = Color.White,
-    secondary = Color.White,
-    background = BlackBackground,
-    surface = BlackBackground,
-    onPrimary = Color.Black,
-    onSecondary = Color.Black,
+private val CinematicColorScheme = lightColorScheme(
+    primary = Color.Black,
+    secondary = Color.Black,
+    background = WhiteBackground,
+    surface = WhiteBackground,
+    onPrimary = Color.White,
+    onSecondary = Color.White,
     onBackground = TextTitle,
     onSurface = TextTitle,
-    surfaceVariant = Color(0xFF111111),
+    surfaceVariant = Color(0xFFE5E5EA),
     onSurfaceVariant = TextSubtitle
 )
 
@@ -35,8 +35,8 @@ fun OpenHubTheme(
             window.navigationBarColor = android.graphics.Color.TRANSPARENT
             WindowCompat.setDecorFitsSystemWindows(window, false)
             val wic = WindowCompat.getInsetsController(window, view)
-            wic.isAppearanceLightStatusBars = false
-            wic.isAppearanceLightNavigationBars = false
+            wic.isAppearanceLightStatusBars = true
+            wic.isAppearanceLightNavigationBars = true
         }
     }
 
